@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>Staff Dashboard</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,7 +13,7 @@
 
 body{
     background:#f4f6f9;
-    font-family: 'Segoe UI', sans-serif;
+    font-family:'Segoe UI',sans-serif;
 }
 
 /* Sidebar */
@@ -38,7 +41,7 @@ body{
     color:white;
 }
 
-/* Content */
+/* Main */
 .content{
     margin-left:220px;
     padding:30px;
@@ -59,16 +62,29 @@ body{
     background:#0d6efd;
 }
 
-.bg-pending{
-    background:#ffc107;
+.bg-placed{
+    background:#6f42c1;
 }
 
-.bg-packed{
+.bg-pending{
+    background:#ffc107;
+    color:black;
+}
+
+.bg-shipped{
     background:#17a2b8;
 }
 
-.bg-products{
+.bg-delivered{
     background:#28a745;
+}
+
+.bg-cancelled{
+    background:#dc3545;
+}
+
+.bg-products{
+    background:#343a40;
 }
 
 /* Table */
@@ -92,64 +108,159 @@ body{
 <!-- Sidebar -->
 <div class="sidebar">
 
-<h4 class="text-center">Staff Panel</h4>
+<h4 class="text-center">
+Staff Panel
+</h4>
+
 <hr class="text-white">
 
-<a href="{{ url_for('staff.dashboard') }}">Dashboard</a>
-<a href="{{ url_for('staff.orders') }}">Orders</a>
-<a href="{{ url_for('staff.products') }}">Products</a>
-<a href="{{ url_for('staff.suppliers') }}">Suppliers</a>
-<a href="{{ url_for('staff.customers') }}">Customers</a>
-<a href="{{ url_for('staff.staff_logout') }}">Logout</a>
+<a href="{{ url_for('staff.dashboard') }}">
+Dashboard
+</a>
+
+<a href="{{ url_for('staff.orders') }}">
+Orders
+</a>
+
+<a href="{{ url_for('staff.products') }}">
+Products
+</a>
+
+<a href="{{ url_for('staff.suppliers') }}">
+Suppliers
+</a>
+
+<a href="{{ url_for('staff.customers') }}">
+Customers
+</a>
+
+<a href="{{ url_for('staff.staff_logout') }}">
+Logout
+</a>
 
 </div>
+
 
 <!-- Main Content -->
 <div class="content">
 
-<h2 class="mb-4">📊 Dashboard</h2>
+<h2 class="mb-4">
+📊 Dashboard
+</h2>
 
 <div class="row g-3">
 
 <!-- Total Orders -->
-<div class="col-md-3">
+<div class="col-md-2">
+
 <div class="card stat-card bg-orders p-3">
+
 <h6>Total Orders</h6>
+
 <h3>{{ total_orders }}</h3>
-</div>
+
 </div>
 
-<!-- Pending Orders -->
-<div class="col-md-3">
+</div>
+
+
+<!-- Placed -->
+<div class="col-md-2">
+
+<div class="card stat-card bg-placed p-3">
+
+<h6>Placed</h6>
+
+<h3>{{ placed_orders }}</h3>
+
+</div>
+
+</div>
+
+
+<!-- Pending -->
+<div class="col-md-2">
+
 <div class="card stat-card bg-pending p-3">
-<h6>Pending Orders</h6>
+
+<h6>Pending</h6>
+
 <h3>{{ pending_orders }}</h3>
-</div>
+
 </div>
 
-<!-- Packed Orders -->
-<div class="col-md-3">
-<div class="card stat-card bg-packed p-3">
-<h6>Packed Orders</h6>
-<h3>{{ packed_orders }}</h3>
 </div>
+
+
+<!-- Shipped -->
+<div class="col-md-2">
+
+<div class="card stat-card bg-shipped p-3">
+
+<h6>Shipped</h6>
+
+<h3>{{ shipped_orders }}</h3>
+
 </div>
+
+</div>
+
+
+<!-- Delivered -->
+<div class="col-md-2">
+
+<div class="card stat-card bg-delivered p-3">
+
+<h6>Delivered</h6>
+
+<h3>{{ delivered_orders }}</h3>
+
+</div>
+
+</div>
+
+
+<!-- Cancelled -->
+<div class="col-md-2">
+
+<div class="card stat-card bg-cancelled p-3">
+
+<h6>Cancelled</h6>
+
+<h3>{{ cancelled_orders }}</h3>
+
+</div>
+
+</div>
+
+</div>
+
 
 <!-- Total Products -->
+<div class="row mt-3">
+
 <div class="col-md-3">
+
 <div class="card stat-card bg-products p-3">
+
 <h6>Total Products</h6>
+
 <h3>{{ total_products }}</h3>
-</div>
+
 </div>
 
 </div>
+
+</div>
+
 
 <!-- Recent Orders -->
 <div class="card mt-4">
 
 <div class="card-header fw-bold">
+
 🧾 Recent Orders
+
 </div>
 
 <div class="card-body">
@@ -159,13 +270,17 @@ body{
 <table class="table table-bordered table-hover">
 
 <thead>
+
 <tr>
+
 <th>Order ID</th>
 <th>Customer</th>
 <th>Total (₹)</th>
 <th>Status</th>
 <th>Date</th>
+
 </tr>
+
 </thead>
 
 <tbody>
@@ -174,25 +289,57 @@ body{
 
 <tr>
 
-<td>#{{ order.id }}</td>
-
-<td>{{ order.customer_name }}</td>
-
-<td>₹{{ order.total_amount }}</td>
-
 <td>
-{% if order.status == 'Pending' %}
-<span class="badge bg-warning text-dark">Pending</span>
-{% elif order.status == 'Packed' %}
-<span class="badge bg-info text-dark">Packed</span>
-{% elif order.status == 'Delivered' %}
-<span class="badge bg-success">Delivered</span>
-{% else %}
-<span class="badge bg-danger">Cancelled</span>
-{% endif %}
+#{{ order.id }}
 </td>
 
-<td>{{ order.order_date }}</td>
+<td>
+{{ order.customer_name }}
+</td>
+
+<td>
+₹{{ order.total_amount }}
+</td>
+
+<td>
+
+{% if order.status == 'Placed' %}
+
+<span class="badge bg-primary">
+Placed
+</span>
+
+{% elif order.status == 'Pending' %}
+
+<span class="badge bg-warning text-dark">
+Pending
+</span>
+
+{% elif order.status == 'Shipped' %}
+
+<span class="badge bg-info text-dark">
+Shipped
+</span>
+
+{% elif order.status == 'Delivered' %}
+
+<span class="badge bg-success">
+Delivered
+</span>
+
+{% elif order.status == 'Cancelled' %}
+
+<span class="badge bg-danger">
+Cancelled
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+{{ order.order_date }}
+</td>
 
 </tr>
 
@@ -211,4 +358,5 @@ body{
 </div>
 
 </body>
+
 </html>

@@ -195,35 +195,97 @@ def dashboard():
 
     cur = mysql.connection.cursor()
 
-    # total orders
-    cur.execute("SELECT COUNT(*) AS total FROM orders")
+    # =========================
+    # TOTAL ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS total
+        FROM orders
+    """)
     total_orders = cur.fetchone()["total"]
 
-    # pending orders
-    cur.execute("SELECT COUNT(*) AS pending FROM orders WHERE status='Pending'")
+
+    # =========================
+    # PLACED ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS placed
+        FROM orders
+        WHERE status = 'Placed'
+    """)
+    placed_orders = cur.fetchone()["placed"]
+
+
+    # =========================
+    # PENDING ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS pending
+        FROM orders
+        WHERE status = 'Pending'
+    """)
     pending_orders = cur.fetchone()["pending"]
 
-    # packed orders
-    cur.execute("SELECT COUNT(*) AS packed FROM orders WHERE status='Packed'")
-    packed_orders = cur.fetchone()["packed"]
 
-    # total products
-    cur.execute("SELECT COUNT(*) AS total FROM products")
+    # =========================
+    # SHIPPED ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS shipped
+        FROM orders
+        WHERE status = 'Shipped'
+    """)
+    shipped_orders = cur.fetchone()["shipped"]
+
+
+    # =========================
+    # DELIVERED ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS delivered
+        FROM orders
+        WHERE status = 'Delivered'
+    """)
+    delivered_orders = cur.fetchone()["delivered"]
+
+
+    # =========================
+    # CANCELLED ORDERS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS cancelled
+        FROM orders
+        WHERE status = 'Cancelled'
+    """)
+    cancelled_orders = cur.fetchone()["cancelled"]
+
+
+    # =========================
+    # TOTAL PRODUCTS
+    # =========================
+    cur.execute("""
+        SELECT COUNT(*) AS total
+        FROM products
+    """)
     total_products = cur.fetchone()["total"]
 
-    # recent orders
+
+    # =========================
+    # RECENT ORDERS
+    # =========================
     cur.execute("""
-    SELECT 
-        o.id,
-        o.customer_id,
-        o.total_amount,
-        o.status,
-        o.order_date,
-        c.customer_name
-    FROM orders o
-    JOIN customer c ON o.customer_id = c.customer_id
-    ORDER BY o.order_date DESC
-    LIMIT 5
+        SELECT 
+            o.id,
+            o.customer_id,
+            o.total_amount,
+            o.status,
+            o.order_date,
+            c.customer_name
+        FROM orders o
+        JOIN customer c
+        ON o.customer_id = c.customer_id
+        ORDER BY o.order_date DESC
+        LIMIT 5
     """)
 
     recent_orders = cur.fetchall()
@@ -232,10 +294,21 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
+
         total_orders=total_orders,
+
+        placed_orders=placed_orders,
+
         pending_orders=pending_orders,
-        packed_orders=packed_orders,
+
+        shipped_orders=shipped_orders,
+
+        delivered_orders=delivered_orders,
+
+        cancelled_orders=cancelled_orders,
+
         total_products=total_products,
+
         recent_orders=recent_orders
     )
 
@@ -433,7 +506,7 @@ def orders_report():
             order["customer"],
             order["address"],
             items_text,
-            f"₹{order['total']}",   # ✅ rupee fixed
+            f"Rs {order['total']}",   # ✅ rupee fixed
             order["status"],
             str(order["date"])
         ])
@@ -593,31 +666,48 @@ def add_supplier():
         return redirect(url_for("staff.suppliers"))
 
     return render_template("add_supplier.html", products=products)
-
 @staff.route("/customers")
 def customers():
 
     cursor = mysql.connection.cursor()
 
     cursor.execute("""
+
         SELECT 
             c.customer_id,
             c.customer_name,
             c.customer_email,
 
-            COALESCE(SUM(r.balance),0) AS reward_points,
+            -- total orders
+            COALESCE(o.total_orders, 0) AS total_orders,
 
-            COUNT(o.id) AS total_orders
+            -- latest reward balance
+            COALESCE(r.balance, 0) AS reward_points
 
         FROM customer c
 
-        LEFT JOIN orders o
-            ON c.customer_id = o.customer_id
+        LEFT JOIN (
+            SELECT 
+                customer_id,
+                COUNT(*) AS total_orders
+            FROM orders
+            GROUP BY customer_id
+        ) o
+        ON c.customer_id = o.customer_id
 
-        LEFT JOIN customer_rewards r
-            ON c.customer_id = r.customer_id
+        LEFT JOIN (
+            SELECT 
+                cr1.customer_id,
+                cr1.balance
+            FROM customer_rewards cr1
+            WHERE cr1.id = (
+                SELECT MAX(cr2.id)
+                FROM customer_rewards cr2
+                WHERE cr1.customer_id = cr2.customer_id
+            )
+        ) r
+        ON c.customer_id = r.customer_id
 
-        GROUP BY c.customer_id
     """)
 
     customer = cursor.fetchall()
@@ -628,6 +718,7 @@ def customers():
         "staff_customers.html",
         customer=customer
     )
+
 @staff.route("/staff/logout")
 def staff_logout():
     session.pop("staff_id", None)

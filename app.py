@@ -315,7 +315,7 @@ def login():
         # 🔹 Get form data
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "").strip()
-        remember = request.form.get("remember")
+        
 
         # 🔹 Basic validation
         if not email or not password:
@@ -370,10 +370,9 @@ def login():
         session["customer_email"] = user["customer_email"]
 
         # 🔹 Remember me    
-        if remember:
-            session.permanent = True
+        
 
-        flash(f"Welcome back, {user['customer_name']} 🎉", "success")
+        
 
         return redirect(url_for("home"))
 
@@ -528,9 +527,7 @@ def products():
         all_categories=all_categories
     )
 
-@app.route('/orders')
-def orders():
-    return render_template('orders.html')
+
 
 @app.route('/search')
 def search():
@@ -1214,9 +1211,6 @@ def place_order():
     order_id
 ))
 
-        # clear session coins
-        session.pop("coins_used", None)
-
         mysql.connection.commit()
 
         return redirect(url_for('order_success', order_id=order_id))
@@ -1546,7 +1540,6 @@ def download_invoice(order_id):
         download_name=f"Invoice_{order_id}.pdf",
         mimetype="application/pdf"
     )
-
 @app.route('/order_success')
 def order_success():
 
@@ -1557,6 +1550,7 @@ def order_success():
 
     cur = mysql.connection.cursor()
 
+    # Get order details
     cur.execute("""
         SELECT total_amount, customer_id
         FROM orders
@@ -1570,22 +1564,72 @@ def order_success():
         return "Order not found"
 
     total = data["total_amount"]
+    customer_id = data["customer_id"]
 
+    # Coins used from session
     coins_used = int(session.get("coins_used") or 0)
 
+    # Final payable amount
     payable_amount = total - coins_used
 
     if payable_amount < 0:
         payable_amount = 0
 
+    # Reward calculation
+    reward_earned = int(payable_amount // 100)
+
+    # Get previous balance
+    cur.execute("""
+        SELECT balance
+        FROM customer_rewards
+        WHERE customer_id = %s
+        ORDER BY id DESC
+        LIMIT 1
+    """, (customer_id,))
+
+    last_reward = cur.fetchone()
+
+    old_balance = last_reward["balance"] if last_reward else 0
+
+    # New balance
+    new_balance = old_balance - coins_used + reward_earned
+
+    if new_balance < 0:
+        new_balance = 0
+
+    # Insert reward history
+    cur.execute("""
+        INSERT INTO customer_rewards
+        (
+            customer_id,
+            points_added,
+            points_used,
+            balance,
+            order_id
+        )
+        VALUES (%s, %s, %s, %s, %s)
+    """, (
+        customer_id,
+        reward_earned,
+        coins_used,
+        new_balance,
+        order_id
+    ))
+
+    mysql.connection.commit()
+
     cur.close()
 
+    # Send data to template
     order = {
         "total_amount": total,
         "coins_used": coins_used,
-        "payable_amount": payable_amount
+        "payable_amount": payable_amount,
+        "reward_earned": reward_earned,
+        "balance": new_balance
     }
 
+    # Clear session
     session.pop("coins_used", None)
 
     return render_template(
