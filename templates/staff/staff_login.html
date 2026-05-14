@@ -1,135 +1,377 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Staff Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Poppins', sans-serif;
-    }
+    <style>
+        :root {
+            --blue: #2563eb;
+            --blue-light: #3b82f6;
+            --blue-pale: #dbeafe;
+            --charcoal: #111827;
+            --slate: #374151;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --white: #ffffff;
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
 
-    body {
-        height: 100vh;
-        background: url("{{ url_for('static', filename='images/bg2.jpg') }}") no-repeat center center/cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-    }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Blur + dark overlay */
-    body::before {
-        content: "";
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backdrop-filter: blur(10px);
-        background: rgba(0, 0, 0, 0.5);
-    }
+        body, html {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
 
-    .login-card {
-        position: relative;
-        width: 380px;
-        padding: 40px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.12);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        backdrop-filter: blur(15px);
-        color: white;
-        text-align: center;
-    }
+        /* Blurred BG */
+        .bg-image {
+            background-image: url('/static/images/bg2.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.7);
+            -webkit-filter: blur(8px) brightness(0.7);
+            position: fixed;
+            inset: -20px;
+            z-index: -1;
+        }
 
-    .login-card h2 {
-        margin-bottom: 30px;
-        font-weight: 600;
-        letter-spacing: 1px;
-    }
+        /* Full-height centering */
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
 
-    .input-group {
-        margin-bottom: 20px;
-        text-align: left;
-    }
+        /* Card */
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
 
-    .input-group label {
-        font-size: 14px;
-    }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-    .input-group input {
-        width: 100%;
-        padding: 12px;
-        margin-top: 5px;
-        border: none;
-        border-radius: 8px;
-        outline: none;
-    }
+        /* Card Top Strip */
+        .card-strip {
+            background: linear-gradient(135deg, var(--blue-light), var(--blue));
+            padding: 28px 32px 24px;
+            text-align: center;
+        }
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 22px;
+            color: white;
+        }
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .card-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+        }
 
-    .btn {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        background: linear-gradient(45deg, #00c6ff, #0072ff);
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s ease;
-    }
+        /* Card Body */
+        .card-body-inner {
+            padding: 28px 32px 32px;
+        }
 
-    .btn:hover {
-        transform: scale(1.05);
-    }
-    .register-link {
-    margin-top: 20px;
-    font-size: 14px;
-}
+        /* Flash Messages */
+        .alert-custom {
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .alert-success { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
-.register-link a {
-    color: #ffb347;
-    text-decoration: none;
-    font-weight: 500;
-}
+        /* Form Fields */
+        .field-group { margin-bottom: 18px; }
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            color: var(--slate);
+            margin-bottom: 7px;
+        }
+        .field-wrapper { position: relative; }
+        .field-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .field-input {
+            width: 100%;
+            padding: 11px 40px 11px 38px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--charcoal);
+            background: white;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .field-input:focus {
+            border-color: var(--blue-light);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+        .field-input::placeholder { color: #b0b7c3; }
 
-.register-link a:hover {
-    text-decoration: underline;
-}
-</style>
+        /* Toggle password */
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 2px 4px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .toggle-pw:hover { color: var(--blue); }
 
+        /* Forgot row */
+        .options-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 22px;
+            font-size: 13px;
+        }
+        .forgot-link {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover { text-decoration: underline; }
 
+        /* Submit Button */
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--blue-light), var(--blue));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 22px;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--blue), #1d4ed8);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+            transform: translateY(-2px);
+        }
+        .btn-login:active { transform: translateY(0); }
+
+        /* Staff badge */
+        .staff-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--blue-pale);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Footer text */
+        .footer-text {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--muted);
+        }
+        .footer-text a {
+            color: var(--blue);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .footer-text a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>Staff Login</h2>
+    <div class="bg-image"></div>
 
-<form method="POST">
-    <div class="input-group">
-        <label>Email</label>
-        <input type="email" name="email" required>
+    <div class="page-wrapper">
+        <div class="login-card">
+
+            <!-- Top strip -->
+            <div class="card-strip">
+                <div class="brand-icon"><i class="fas fa-user-tie"></i></div>
+                <div class="card-title">Staff Portal</div>
+                <div class="card-subtitle">Sign in to access your staff dashboard</div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body-inner">
+                <!-- Top Switch -->
+<!-- Customer / Staff Switch -->
+<!-- Customer / Staff Switch -->
+<div class="text-center mb-4">
+
+    <div class="d-inline-flex p-1 rounded-pill"
+         style="
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+         ">
+
+        <!-- Inactive -->
+        <a href="/login"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-semibold"
+           style="
+                color: #059669;
+                font-size: 14px;
+           ">
+            Customer
+        </a>
+
+        <!-- Active -->
+        <a href="/staff/login"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-bold"
+           style="
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                font-size: 14px;
+           ">
+            Staff
+        </a>
+
     </div>
 
-    <div class="input-group">
-        <label>Password</label>
-        <input type="password" name="password" required>
+</div>
+
+                <div style="text-align:center;">
+                    <span class="staff-badge"><i class="fas fa-shield-halved"></i> Staff Access Only</span>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert-custom {% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                        <i class="fas {% if category == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST" novalidate>
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <label class="field-label" for="email">Email Address</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-envelope field-icon"></i>
+                            <input type="email" class="field-input" id="email" name="email"
+                                   placeholder="staff@example.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field-group">
+                        <label class="field-label" for="password">Password</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-lock field-icon"></i>
+                            <input type="password" class="field-input" id="password" name="password"
+                                   placeholder="Enter your password" required autocomplete="current-password">
+                            <button type="button" class="toggle-pw" onclick="togglePw()" aria-label="Toggle password">
+                                <i class="fas fa-eye" id="pwIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Forgot -->
+                    
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-right-to-bracket"></i> Sign In
+                    </button>
+                </form>
+
+                <!-- Register link -->
+                <p class="footer-text">
+                    Not registered? <a href="{{ url_for('staff.staff_register') }}">Create Account</a>
+                </p>
+
+            </div>
+        </div>
     </div>
 
-    <button type="submit" class="btn">Login</button>
-</form>
-
-<div class="register-link">
-    Not registered?
-    <a href="{{ url_for('staff.staff_register') }}">Create Account</a>
-</div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePw() {
+            const input = document.getElementById('password');
+            const icon  = document.getElementById('pwIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
 
 </body>
 </html>

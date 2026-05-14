@@ -447,42 +447,6 @@ def logout():
 
     return redirect(url_for("login"))
 
-# ---------- Forgot Password ----------
-@app.route('/forgot-password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        email = request.form['email'].strip().lower()
-
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT customer_id FROM customer WHERE customer_email = %s", (email,))
-        user = cur.fetchone()
-        cur.close()
-
-        if not user:
-            return redirect(url_for('forgot_password', error="Email not found"))
-
-        # Generate OTP
-        otp = generate_otp()
-
-        # Store OTP
-        cur = mysql.connection.cursor()
-        cur.execute("DELETE FROM email_otp WHERE email = %s", (email,))
-        cur.execute("INSERT INTO email_otp (email, otp) VALUES (%s, %s)", (email, otp))
-        mysql.connection.commit()
-        cur.close()
-
-        # Send OTP email
-        send_otp_email(email, otp)
-
-        # Set session
-        session['email'] = email
-        session['reset_password'] = True
-
-        return redirect(url_for('verify_otp', email=email))
-
-    return render_template('forgot_password.html')
-
-
 # ---------- Products Page (optional) ----------
 
 @app.route('/products')

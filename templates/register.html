@@ -178,6 +178,39 @@
 
         <!-- Body -->
         <div class="card-body">
+<div class="text-center mb-4">
+
+    <div class="d-inline-flex p-1 rounded-pill"
+         style="
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+         ">
+
+        <!-- Active -->
+        <a href="/register"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-bold"
+           style="
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                font-size: 14px;
+           ">
+            Customer
+        </a>
+
+        <!-- Inactive -->
+        <a href="/staff/register"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-semibold"
+           style="
+                color: #2563eb;
+                font-size: 14px;
+           ">
+            Staff
+        </a>
+
+    </div>
+
+</div>
 
             {% if request.args.get('error') %}
             <div class="alert alert-danger text-center">

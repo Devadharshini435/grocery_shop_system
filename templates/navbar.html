@@ -2,92 +2,170 @@
   <div class="container-fluid">
 
     <!-- Logo -->
-    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+    <a class="navbar-brand d-flex align-items-center"
+       href="{{ url_for('home') }}">
+
       <img src="{{ url_for('static', filename='images/logo.png') }}"
-           class="rounded-circle shadow me-2" width="40" height="40">
+           class="rounded-circle shadow me-2"
+           width="40"
+           height="40">
+
       <span class="fw-bold">Grocery Store</span>
     </a>
 
-    <button class="navbar-toggler" type="button"
+    <!-- Toggle -->
+    <button class="navbar-toggler"
+            type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarNav">
+
       <span class="navbar-toggler-icon"></span>
     </button>
 
-  <form class="d-flex" action="/search" method="GET" style="width: 600px;">
+    <!-- Navbar -->
+    <div class="collapse navbar-collapse" id="navbarNav">
 
+      <!-- Search -->
+      <form class="d-flex mx-auto"
+            action="/search"
+            method="GET"
+            style="width: 500px;">
 
-  <select class="form-select me-2" name="search_by">
-    <option value="item">Search by Item</option>
-    <option value="dish">Search by Dish</option>
-  </select>
+        <select class="form-select me-2"
+                name="search_by"
+                style="max-width:170px;">
 
-  <input class="form-control me-2"
-         type="search"
-         name="query"
-         placeholder="Search"
-         required>
+          <option value="item">Item</option>
+          <option value="dish">Dish</option>
 
-  <button class="btn btn-outline-light" type="submit">
-    Search
-  </button>
+        </select>
 
-</form>
+        <input class="form-control me-2"
+               type="search"
+               name="query"
+               placeholder="Search"
+               required>
 
+        <button class="btn btn-outline-light"
+                type="submit">
 
-    <!-- Right Menu -->
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav align-items-lg-center">
+          Search
+
+        </button>
+
+      </form>
+
+      <!-- Right Menu -->
+      <ul class="navbar-nav align-items-center ms-auto">
 
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+          <a class="nav-link"
+             href="{{ url_for('home') }}">
+
+            Home
+
+          </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('products') }}">Products</a>
+          <a class="nav-link"
+             href="{{ url_for('products') }}">
+
+            Products
+
+          </a>
         </li>
 
-        <!-- Add to Cart -->
-          <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('cart') }}">
-        Add to Cart
-   <!---->     {% if cart_count > 0 %}
-            <span class="badge bg-danger ms-1">{{ cart_count }}</span>
-        {% endif %}
-    </a>
-</li>
-
-        <!-- My Orders -->
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('my_orders') }}">My Orders</a>
+          <a class="nav-link"
+             href="{{ url_for('cart') }}">
+
+            Cart
+
+            {% if cart_count > 0 %}
+            <span class="badge bg-danger ms-1">
+              {{ cart_count }}
+            </span>
+            {% endif %}
+
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{{ url_for('my_orders') }}">
+
+            My Orders
+
+          </a>
         </li>
 
         <!-- Profile -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-            {% if session.get('customer_id') %}
-              <img src="{{ url_for('static', filename='images/profile.jpg') }}"
-                   width="30" height="30" class="rounded-circle">
-            {% else %}
-              <img src="{{ url_for('static', filename='images/male.png') }}"
-                   width="30" height="30">
-            {% endif %}
+        {% if session.get('customer_id') %}
+
+        <li class="nav-item dropdown ms-2">
+
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             data-bs-toggle="dropdown">
+
+            <img src="{{ url_for('static', filename='images/profile.jpg') }}"
+                 width="34"
+                 height="34"
+                 class="rounded-circle border border-2 border-light shadow-sm">
+
           </a>
 
           <ul class="dropdown-menu dropdown-menu-end">
-            {% if session.get('customer_id') %}
-              <li><a class="dropdown-item" href="/profile">My Profile</a></li>
-              <li>
-<a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
-</li>
-            {% else %}
-              <li><a class="dropdown-item" href="/login">Login</a></li>
-              <li><a class="dropdown-item" href="/register">Register</a></li>
-            {% endif %}
+
+            <li>
+              <a class="dropdown-item"
+                 href="/profile">
+
+                My Profile
+
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item text-danger"
+                 href="{{ url_for('logout') }}">
+
+                Logout
+
+              </a>
+            </li>
+
           </ul>
+
         </li>
 
+        {% else %}
+
+        <li class="nav-item ms-2">
+
+          <a class="btn btn-light rounded-pill px-3 fw-semibold me-2"
+   href="/login">
+
+   <i class="fas fa-right-to-bracket me-1"></i>
+   Sign In
+
+</a>
+
+<a class="btn btn-success rounded-pill px-3 fw-semibold"
+   href="/register">
+
+   <i class="fas fa-user-plus me-1"></i>
+   Sign Up
+
+</a>
+
+        </li>
+
+        {% endif %}
+
       </ul>
+
     </div>
   </div>
 </nav>

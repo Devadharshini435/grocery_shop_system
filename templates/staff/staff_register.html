@@ -1,160 +1,417 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Staff Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue: #2563eb;
+            --blue-light: #3b82f6;
+            --blue-pale: #dbeafe;
+            --charcoal: #111827;
+            --slate: #374151;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --white: #ffffff;
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Poppins', sans-serif;
-    }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-        height: 100vh;
-        background: url("{{ url_for('static', filename='images/PG.jpg') }}") no-repeat center center/cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-    }
+        body, html {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
 
-    /* Blur + Dark Overlay */
-    body::before {
-        content: "";
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backdrop-filter: blur(10px);
-        background: rgba(0, 0, 0, 0.5);
-    }
+        /* Blurred BG */
+        .bg-image {
+            background-image: url('/static/images/bg2.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.7);
+            -webkit-filter: blur(8px) brightness(0.7);
+            position: fixed;
+            inset: -20px;
+            z-index: -1;
+        }
 
-    .register-card {
-        position: relative;
-        width: 420px;
-        padding: 40px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.12);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        backdrop-filter: blur(15px);
-        color: white;
-        text-align: center;
-    }
+        /* Full-height centering */
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
 
-    .register-card h2 {
-        margin-bottom: 25px;
-        font-weight: 600;
-    }
+        /* Card */
+        .register-card {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
 
-    .input-group {
-        margin-bottom: 15px;
-        text-align: left;
-    }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-    .input-group input {
-        width: 100%;
-        padding: 12px;
-        margin-top: 5px;
-        border-radius: 8px;
-        border: none;
-        outline: none;
-    }
+        /* Card Top Strip */
+        .card-strip {
+            background: linear-gradient(135deg, var(--blue-light), var(--blue));
+            padding: 28px 32px 24px;
+            text-align: center;
+        }
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 22px;
+            color: white;
+        }
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .card-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+        }
 
-    .btn {
-        width: 100%;
-        padding: 12px;
-        border-radius: 8px;
-        border: none;
-        margin-top: 10px;
-        background: linear-gradient(45deg, #ff512f, #dd2476);
-        color: white;
-        font-size: 15px;
-        cursor: pointer;
-        transition: 0.3s ease;
-    }
+        /* Card Body */
+        .card-body-inner {
+            padding: 28px 32px 32px;
+        }
 
-    .btn:hover {
-        transform: scale(1.05);
-    }
+        /* Alert */
+        .alert-custom {
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .alert-success { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
-    .login-link {
-        margin-top: 15px;
-        font-size: 14px;
-    }
+        /* Form Fields */
+        .field-group { margin-bottom: 16px; }
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            color: var(--slate);
+            margin-bottom: 7px;
+        }
+        .field-wrapper { position: relative; }
+        .field-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .field-input {
+            width: 100%;
+            padding: 11px 16px 11px 38px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--charcoal);
+            background: white;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .field-input:focus {
+            border-color: var(--blue-light);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+        .field-input::placeholder { color: #b0b7c3; }
 
-    .login-link a {
-        color: #ffb347;
-        text-decoration: none;
-    }
-    .input-group select {
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    font-size: 14px;
-    cursor: pointer;
-}
+        /* Select arrow */
+        .select-wrapper { position: relative; }
+        .select-wrapper .field-input { padding-right: 36px; cursor: pointer; }
+        .select-arrow {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 12px;
+            pointer-events: none;
+        }
 
-/* Optional hover effect */
-.input-group select:hover {
-    background: rgba(255, 255, 255, 1);
-}
-</style>
+        /* Toggle password */
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 2px 4px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .toggle-pw:hover { color: var(--blue); }
 
+        /* Staff badge */
+        .staff-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--blue-pale);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
 
+        /* Submit Button */
+        .btn-register {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--blue-light), var(--blue));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 22px;
+        }
+        .btn-register:hover {
+            background: linear-gradient(135deg, var(--blue), #1d4ed8);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+            transform: translateY(-2px);
+        }
+        .btn-register:active { transform: translateY(0); }
+
+        /* Footer text */
+        .footer-text {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--muted);
+        }
+        .footer-text a {
+            color: var(--blue);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .footer-text a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
 
-<div class="register-card">
-    <h2>Create Staff Account</h2>
-<form method="POST">
-    <div class="input-group">
-        <input type="text" name="name" placeholder="Full Name" required>
+    <div class="bg-image"></div>
+
+    <div class="page-wrapper">
+        <div class="register-card">
+            
+
+            <!-- Top strip -->
+            <div class="card-strip">
+                <div class="brand-icon"><i class="fas fa-user-plus"></i></div>
+                <div class="card-title">Create Staff Account</div>
+                <div class="card-subtitle">Register to join the staff portal</div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body-inner">
+                <!-- Top Switch -->
+<div class="text-center mb-4">
+
+    <div class="d-inline-flex p-1 rounded-pill"
+         style="
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+         ">
+
+        <!-- Inactive -->
+        <a href="/register"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-semibold"
+           style="
+                color: #059669;
+                font-size: 14px;
+           ">
+            Customer
+        </a>
+
+        <!-- Active -->
+        <a href="/staff/register"
+           class="text-decoration-none px-4 py-2 rounded-pill fw-bold"
+           style="
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                font-size: 14px;
+           ">
+            Staff
+        </a>
+
     </div>
 
-    <div class="input-group">
-        <input type="email" name="email" placeholder="Email" required>
-    </div>
-
-    <div class="input-group">
-        <input type="text" name="phone" placeholder="Phone">
-    </div>
-
-    <div class="input-group">
-    <select name="designation" required>
-        <option value="">Select Designation</option>
-        <option value="Manager">Manager</option>
-        <option value="Sales">Sales Staff</option>
-        <option value="Inventory">Inventory Staff</option>
-        <option value="Accounts">Accounts</option>
-    </select>
 </div>
 
-    <div class="input-group">
-        <input type="password" name="password" placeholder="Password" required>
+                <div style="text-align:center;">
+                    <span class="staff-badge"><i class="fas fa-shield-halved"></i> Staff Registration</span>
+                </div>
+
+                <!-- Error from query param -->
+                {% if request.args.get('error') %}
+                <div class="alert-custom alert-error">
+                    <i class="fas fa-circle-exclamation"></i>
+                    {{ request.args.get('error') }}
+                </div>
+                {% endif %}
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert-custom {% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                        <i class="fas {% if category == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST" novalidate>
+
+                    <!-- Full Name -->
+                    <div class="field-group">
+                        <label class="field-label" for="name">Full Name</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-user field-icon"></i>
+                            <input type="text" class="field-input" id="name" name="name"
+                                   placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <label class="field-label" for="email">Email Address</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-envelope field-icon"></i>
+                            <input type="email" class="field-input" id="email" name="email"
+                                   placeholder="staff@example.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="field-group">
+                        <label class="field-label" for="phone">Phone Number</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-phone field-icon"></i>
+                            <input type="text" class="field-input" id="phone" name="phone"
+                                   placeholder="Enter your phone number">
+                        </div>
+                    </div>
+
+                    <!-- Designation -->
+                    <div class="field-group">
+                        <label class="field-label" for="designation">Designation</label>
+                        <div class="field-wrapper select-wrapper">
+                            <i class="fas fa-briefcase field-icon"></i>
+                            <select class="field-input" id="designation" name="designation" required>
+                                <option value="" disabled selected>Select Designation</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Sales">Sales Staff</option>
+                                <option value="Inventory">Inventory Staff</option>
+                                <option value="Accounts">Accounts</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field-group">
+                        <label class="field-label" for="password">Password</label>
+                        <div class="field-wrapper">
+                            <i class="fas fa-lock field-icon"></i>
+                            <input type="password" class="field-input" id="password" name="password"
+                                   placeholder="Create a password" required autocomplete="new-password">
+                            <button type="button" class="toggle-pw" onclick="togglePw()" aria-label="Toggle password">
+                                <i class="fas fa-eye" id="pwIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <!-- Login link -->
+                <p class="footer-text">
+                    Already have an account? <a href="{{ url_for('staff.staff_login') }}">Sign In</a>
+                </p>
+
+            </div>
+        </div>
     </div>
 
-    <button type="submit" class="btn">Register</button>
-</form>
-
-<div class="login-link">
-    Already have an account?
-    <a href="{{ url_for('staff.staff_login') }}">Login</a>
-</div>
-
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePw() {
+            const input = document.getElementById('password');
+            const icon  = document.getElementById('pwIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
 
 </body>
 </html>
