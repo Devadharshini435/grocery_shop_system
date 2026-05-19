@@ -6,7 +6,11 @@ from email.message import EmailMessage
 import smtplib
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-
+from flask import make_response
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+import io
 pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 
 EMAIL_ADDRESS = "dish2cart.grocery@gmail.com"
@@ -719,6 +723,187 @@ def customers():
         customer=customer
     )
 
+from flask import make_response
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.styles import ParagraphStyle
+
+from datetime import datetime
+import io
+
+
+@staff.route("/product-report-pdf")
+def product_report_pdf():
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        SELECT
+            product_id,
+            category,
+            product_name,
+            price,
+            stock
+        FROM products
+    """)
+
+    products = cur.fetchall()
+
+    buffer = io.BytesIO()
+
+    pdf = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=40,
+        bottomMargin=30
+    )
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    # ---------- Title ----------
+
+    title_style = ParagraphStyle(
+        name="TitleStyle",
+        parent=styles["Heading1"],
+        fontSize=24,
+        leading=30,
+        alignment=TA_CENTER,
+        spaceAfter=8
+    )
+
+    subtitle_style = ParagraphStyle(
+        name="Subtitle",
+        parent=styles["Normal"],
+        fontSize=11,
+        alignment=TA_CENTER,
+        textColor=colors.grey,
+        spaceAfter=25
+    )
+
+    normal_style = ParagraphStyle(
+        name="NormalStyle",
+        parent=styles["Normal"],
+        fontSize=11,
+        leading=18,
+        alignment=TA_LEFT
+    )
+
+    title = Paragraph("PRODUCT REPORT", title_style)
+
+   
+
+    elements.append(title)
+   
+
+    # ---------- Summary ----------
+
+    total_products = len(products)
+
+    total_stock = sum(p["stock"] for p in products)
+
+   
+    # ---------- Table ----------
+
+    data = [[
+        "ID",
+        "Category",
+        "Product Name",
+        "Price",
+        "Quantity"
+    ]]
+
+    for p in products:
+
+        data.append([
+
+            str(p["product_id"]),
+
+            p["category"],
+
+            p["product_name"],
+
+            f"Rs. {p['price']}",
+
+            str(p["stock"])
+
+        ])
+
+    table = Table(
+        data,
+        colWidths=[60, 110, 220, 80, 70]
+    )
+
+    table.setStyle(TableStyle([
+
+        # Header
+        ("BACKGROUND", (0,0), (-1,0), colors.black),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+        ("FONTSIZE", (0,0), (-1,0), 11),
+
+        # Body
+        ("FONTNAME", (0,1), (-1,-1), "Helvetica"),
+        ("FONTSIZE", (0,1), (-1,-1), 10),
+
+        # Alignment
+        ("ALIGN", (0,0), (-1,-1), "CENTER"),
+        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+
+        # Padding
+        ("TOPPADDING", (0,0), (-1,-1), 8),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+
+        # Grid
+        ("GRID", (0,0), (-1,-1), 1, colors.black),
+
+        # Alternate row effect
+        ("BACKGROUND", (0,1), (-1,-1), colors.whitesmoke),
+
+    ]))
+
+    elements.append(table)
+
+    elements.append(Spacer(1, 30))
+
+    # ---------- Footer ----------
+
+    footer = Paragraph(
+        "End of Product Report",
+        subtitle_style
+    )
+
+    elements.append(footer)
+
+    # ---------- Build PDF ----------
+
+    pdf.build(elements)
+
+    buffer.seek(0)
+
+    response = make_response(buffer.getvalue())
+
+    response.headers["Content-Type"] = "application/pdf"
+
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=product_report.pdf"
+    )
+
+    return response
 @staff.route("/staff/logout")
 def staff_logout():
     session.pop("staff_id", None)

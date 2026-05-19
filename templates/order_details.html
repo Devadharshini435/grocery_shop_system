@@ -3,6 +3,7 @@
 <head>
 
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
@@ -20,467 +21,729 @@
 <style>
 
 :root {
-    --emerald: #059669;
-    --emerald-light: #10b981;
-    --emerald-pale: #d1fae5;
-    --border: #e5e7eb;
-    --muted: #6b7280;
-    --radius: 16px;
+
+    --emerald:#059669;
+    --emerald-light:#10b981;
+    --emerald-pale:#d1fae5;
+
+    --border:#e5e7eb;
+    --muted:#6b7280;
+
+    --radius:20px;
 }
 
-/* ── Background ───────────────────── */
+/* ─────────────────────────────
+   BODY
+───────────────────────────── */
+
 body {
-    background: #f0fdf4;
-    min-height: 100vh;
+
+    background:#f0fdf4;
+
+    min-height:100vh;
+
+    overflow-x:hidden;
 }
 
 body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
 
-    background: linear-gradient(
-        135deg,
-        #ecfdf5 0%,
-        #f0fdf4 50%,
-        #e8f5f0 100%
-    );
+    content:"";
 
-    z-index: -1;
+    position:fixed;
+
+    inset:0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ecfdf5 0%,
+            #f0fdf4 50%,
+            #e8f5f0 100%
+        );
+
+    z-index:-1;
 }
 
-/* ── Page Header ──────────────────── */
+/* ─────────────────────────────
+   CONTAINER
+───────────────────────────── */
+
+.container {
+
+    max-width:100% !important;
+
+    width:100%;
+
+    padding-left:22px;
+    padding-right:22px;
+}
+
+/* ─────────────────────────────
+   MAIN WRAPPER
+───────────────────────────── */
+
+.main-wrapper {
+
+    min-height:calc(100vh - 70px);
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+/* ─────────────────────────────
+   HEADER
+───────────────────────────── */
+
 .page-header {
-    margin-bottom: 30px;
+
+    margin-bottom:24px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    flex-wrap:wrap;
 }
 
 .page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 5px;
+
+    font-size:clamp(2rem,3vw,2.7rem);
+
+    font-weight:700;
+
+    color:#111827;
+
+    margin-bottom:6px;
 }
 
 .page-subtitle {
-    color: var(--muted);
-    font-size: 0.95rem;
+
+    color:var(--muted);
+
+    font-size:0.95rem;
 }
 
-/* ── Cards ────────────────────────── */
+/* ─────────────────────────────
+   MAIN CARD
+───────────────────────────── */
+
 .main-card {
-    background: rgba(255,255,255,0.95);
 
-    border: 1px solid rgba(16,185,129,0.12);
+    background:rgba(255,255,255,0.95);
 
-    border-radius: var(--radius);
+    border:1px solid rgba(16,185,129,0.12);
 
-    box-shadow: 0 2px 40px rgba(5,150,105,0.08);
+    border-radius:var(--radius);
 
-    overflow: hidden;
+    box-shadow:
+        0 6px 40px rgba(5,150,105,0.08);
 
-    margin-bottom: 24px;
+    overflow:hidden;
+
+    margin-bottom:22px;
 }
+
+/* ─────────────────────────────
+   SECTION CARD
+───────────────────────────── */
 
 .section-card {
-    border: 1px solid var(--border);
 
-    border-radius: 14px;
+    border:1px solid var(--border);
 
-    background: #fff;
+    border-radius:18px;
 
-    overflow: hidden;
+    background:#fff;
 
-    margin-bottom: 22px;
+    overflow:hidden;
 
-    transition: 0.2s;
+    transition:0.25s;
 }
 
 .section-card:hover {
-    border-color: rgba(16,185,129,0.35);
 
-    box-shadow: 0 4px 16px rgba(5,150,105,0.06);
+    border-color:rgba(16,185,129,0.35);
+
+    box-shadow:
+        0 10px 22px rgba(5,150,105,0.08);
 }
 
+/* ─────────────────────────────
+   SECTION HEADER
+───────────────────────────── */
+
 .section-header {
-    padding: 18px 22px;
 
-    border-bottom: 1px solid var(--border);
+    padding:20px 24px;
 
-    background: #fafafa;
+    border-bottom:1px solid var(--border);
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background:#fafafa;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+    flex-wrap:wrap;
 }
 
 .section-title {
-    font-size: 0.95rem;
 
-    font-weight: 700;
+    font-size:0.95rem;
 
-    color: var(--emerald);
+    font-weight:700;
 
-    margin: 0;
+    color:var(--emerald);
 
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    margin:0;
 
-    text-transform: uppercase;
+    display:flex;
 
-    letter-spacing: 0.04em;
+    align-items:center;
+
+    gap:8px;
+
+    text-transform:uppercase;
+
+    letter-spacing:0.05em;
 }
+
+/* ─────────────────────────────
+   SECTION BODY
+───────────────────────────── */
 
 .section-body {
-    padding: 22px;
+
+    padding:24px;
 }
 
-/* ── Order Summary ────────────────── */
+/* ─────────────────────────────
+   ORDER SUMMARY
+───────────────────────────── */
+
 .order-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
 }
 
 .order-id {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 5px;
+
+    font-size:1.7rem;
+
+    font-weight:700;
+
+    color:#111827;
+
+    margin-bottom:6px;
 }
 
 .order-date {
-    color: var(--muted);
-    font-size: 0.9rem;
+
+    color:var(--muted);
+
+    font-size:0.92rem;
 }
 
-/* ── Status Badge ─────────────────── */
+/* ─────────────────────────────
+   STATUS BADGE
+───────────────────────────── */
+
 .status-badge {
-    padding: 10px 18px;
 
-    border-radius: 999px;
+    padding:11px 18px;
 
-    font-size: 0.85rem;
+    border-radius:999px;
 
-    font-weight: 700;
+    font-size:0.86rem;
 
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
+    font-weight:700;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:7px;
 }
 
 .status-placed {
-    background: #fef3c7;
-    color: #b45309;
+
+    background:#fef3c7;
+    color:#b45309;
 }
 
 .status-packed {
-    background: #dbeafe;
-    color: #2563eb;
+
+    background:#dbeafe;
+    color:#2563eb;
 }
 
 .status-shipped {
-    background: #ddd6fe;
-    color: #7c3aed;
+
+    background:#ede9fe;
+    color:#7c3aed;
 }
 
 .status-delivered {
-    background: #dcfce7;
-    color: #15803d;
+
+    background:#dcfce7;
+    color:#15803d;
 }
 
-/* ── Tracker ──────────────────────── */
+/* ─────────────────────────────
+   GRID LAYOUT
+───────────────────────────── */
+
+.content-grid {
+
+    display:grid;
+
+    grid-template-columns:
+        1fr
+        1.6fr;
+
+    gap:22px;
+
+    align-items:start;
+}
+
+.left-column,
+.right-column {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:22px;
+}
+
+/* ─────────────────────────────
+   TRACKER
+───────────────────────────── */
+
 .tracker-wrapper {
-    position: relative;
+
+    position:relative;
+
+    padding-top:10px;
 }
 
 .tracker-line {
-    position: absolute;
-    top: 24px;
-    left: 12%;
-    right: 12%;
-    height: 4px;
-    background: #e5e7eb;
-    z-index: 1;
+
+    position:absolute;
+
+    top:34px;
+
+    left:10%;
+
+    right:10%;
+
+    height:4px;
+
+    background:#e5e7eb;
+
+    z-index:1;
 }
 
 .tracker-steps {
-    position: relative;
-    z-index: 2;
 
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    position:relative;
+
+    z-index:2;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:14px;
 }
 
 .status-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    flex:1;
 }
 
 .step-circle {
-    width: 48px;
-    height: 48px;
 
-    border-radius: 50%;
+    width:54px;
+    height:54px;
 
-    background: #f3f4f6;
+    border-radius:50%;
 
-    border: 2px solid #d1d5db;
+    background:#f3f4f6;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border:2px solid #d1d5db;
 
-    font-size: 1rem;
+    display:flex;
 
-    margin-bottom: 10px;
+    align-items:center;
 
-    transition: 0.2s;
+    justify-content:center;
+
+    font-size:1.1rem;
+
+    margin-bottom:10px;
+
+    transition:0.2s;
 }
 
 .status-step.active .step-circle {
-    background: var(--emerald);
 
-    border-color: var(--emerald);
+    background:var(--emerald);
 
-    color: #fff;
+    border-color:var(--emerald);
 
-    box-shadow: 0 4px 14px rgba(5,150,105,0.25);
+    color:#fff;
+
+    box-shadow:
+        0 5px 18px rgba(5,150,105,0.25);
 }
 
 .step-label {
-    font-size: 0.82rem;
 
-    font-weight: 600;
+    font-size:0.84rem;
 
-    color: var(--muted);
+    font-weight:600;
 
-    text-align: center;
+    color:var(--muted);
+
+    text-align:center;
 }
 
 .status-step.active .step-label {
-    color: var(--emerald);
+
+    color:var(--emerald);
 }
 
-/* ── Address ──────────────────────── */
+/* ─────────────────────────────
+   ADDRESS
+───────────────────────────── */
+
 .customer-name {
-    font-size: 1.05rem;
 
-    font-weight: 700;
+    font-size:1.1rem;
 
-    color: #111827;
+    font-weight:700;
 
-    margin-bottom: 18px;
+    color:#111827;
+
+    margin-bottom:18px;
 }
 
 .address-item {
-    display: flex;
-    gap: 10px;
 
-    margin-bottom: 12px;
+    display:flex;
 
-    font-size: 0.9rem;
+    gap:12px;
+
+    margin-bottom:14px;
+
+    font-size:0.93rem;
 }
 
 .address-label {
-    min-width: 90px;
 
-    font-weight: 600;
+    min-width:90px;
 
-    color: #374151;
+    font-weight:700;
+
+    color:#374151;
 }
 
 .address-value {
-    color: var(--muted);
+
+    color:var(--muted);
 }
 
-/* ── Ordered Items ────────────────── */
+/* ─────────────────────────────
+   ORDER ITEMS
+───────────────────────────── */
+
 .order-item {
-    display: grid;
 
-    grid-template-columns: 90px 1fr auto;
+    display:grid;
 
-    gap: 18px;
+    grid-template-columns:
+        95px
+        1fr
+        auto;
 
-    align-items: center;
+    gap:20px;
 
-    padding: 18px 0;
+    align-items:center;
 
-    border-bottom: 1px solid #f3f4f6;
+    padding:20px 0;
+
+    border-bottom:1px solid #f3f4f6;
 }
 
 .order-item:last-child {
-    border-bottom: none;
+
+    border-bottom:none;
 }
 
 .item-image {
-    width: 90px;
-    height: 90px;
 
-    object-fit: contain;
+    width:95px;
+    height:95px;
 
-    background: #f9fafb;
+    object-fit:contain;
 
-    border-radius: 12px;
+    background:#f9fafb;
 
-    padding: 10px;
+    border-radius:16px;
+
+    padding:10px;
+
+    border:1px solid #f1f5f9;
 }
 
 .item-name {
-    font-size: 0.98rem;
 
-    font-weight: 700;
+    font-size:1rem;
 
-    color: #111827;
+    font-weight:700;
 
-    margin-bottom: 6px;
+    color:#111827;
+
+    margin-bottom:6px;
 }
 
 .item-meta {
-    color: var(--muted);
 
-    font-size: 0.88rem;
+    color:var(--muted);
+
+    font-size:0.9rem;
 }
 
 .item-price {
-    font-size: 1rem;
 
-    font-weight: 700;
+    font-size:1.05rem;
 
-    color: var(--emerald);
+    font-weight:700;
+
+    color:var(--emerald);
 }
 
-/* ── Total ────────────────────────── */
+/* ─────────────────────────────
+   TOTAL
+───────────────────────────── */
+
 .order-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 
-    margin-top: 24px;
+    display:flex;
 
-    padding-top: 20px;
+    justify-content:space-between;
 
-    border-top: 1px solid var(--border);
+    align-items:center;
+
+    margin-top:25px;
+
+    padding-top:22px;
+
+    border-top:1px solid var(--border);
 }
 
 .total-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #111827;
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    color:#111827;
 }
 
 .total-amount {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--emerald);
+
+    font-size:1.6rem;
+
+    font-weight:700;
+
+    color:var(--emerald);
 }
 
-/* ── Buttons ──────────────────────── */
+/* ─────────────────────────────
+   BUTTONS
+───────────────────────────── */
+
 .action-buttons {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
+
+    display:flex;
+
+    gap:14px;
+
+    flex-wrap:wrap;
+
+    margin-top:12px;
 }
 
 .btn-main {
-    background: linear-gradient(
-        135deg,
-        var(--emerald-light),
-        var(--emerald)
-    );
 
-    border: none;
+    background:
+        linear-gradient(
+            135deg,
+            var(--emerald-light),
+            var(--emerald)
+        );
 
-    border-radius: 12px;
+    border:none;
 
-    font-weight: 600;
+    border-radius:14px;
 
-    font-size: 0.92rem;
+    font-weight:600;
 
-    color: #fff;
+    font-size:0.92rem;
 
-    padding: 12px 22px;
+    color:#fff;
 
-    transition: 0.2s;
+    padding:13px 24px;
 
-    text-decoration: none;
+    transition:0.2s;
 
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    text-decoration:none;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
 }
 
 .btn-main:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
-    color: #fff;
+
+    transform:translateY(-1px);
+
+    opacity:0.95;
+
+    color:#fff;
 }
 
 .btn-outline-modern {
-    border: 1px solid var(--border);
 
-    background: #fff;
+    border:1px solid var(--border);
 
-    border-radius: 12px;
+    background:#fff;
 
-    font-weight: 600;
+    border-radius:14px;
 
-    font-size: 0.92rem;
+    font-weight:600;
 
-    color: #374151;
+    font-size:0.92rem;
 
-    padding: 12px 22px;
+    color:#374151;
 
-    transition: 0.2s;
+    padding:13px 24px;
 
-    text-decoration: none;
+    transition:0.2s;
 
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    text-decoration:none;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
 }
 
 .btn-outline-modern:hover {
-    border-color: rgba(16,185,129,0.35);
 
-    background: #f9fffc;
+    border-color:rgba(16,185,129,0.35);
 
-    color: var(--emerald);
+    background:#f9fffc;
+
+    color:var(--emerald);
 }
 
-/* ── Responsive ───────────────────── */
-@media (max-width: 768px) {
+/* ─────────────────────────────
+   RESPONSIVE
+───────────────────────────── */
 
-    .tracker-line {
-        display: none;
+@media (max-width:1200px) {
+
+    .content-grid {
+
+        grid-template-columns:1fr;
     }
+}
 
-    .tracker-steps {
-        flex-direction: column;
-        gap: 22px;
-    }
+@media (max-width:768px) {
 
-    .order-item {
-        grid-template-columns: 80px 1fr;
-    }
+    .container {
 
-    .item-price {
-        grid-column: 1 / 3;
-        margin-top: 8px;
-    }
-
-    .item-image {
-        width: 80px;
-        height: 80px;
+        padding-left:14px;
+        padding-right:14px;
     }
 
     .page-title {
-        font-size: 1.6rem;
+
+        font-size:1.8rem;
+    }
+
+    .tracker-line {
+
+        display:none;
+    }
+
+    .tracker-steps {
+
+        flex-direction:column;
+
+        gap:24px;
+    }
+
+    .order-item {
+
+        grid-template-columns:
+            80px
+            1fr;
+    }
+
+    .item-price {
+
+        grid-column:1 / 3;
+
+        margin-top:10px;
+    }
+
+    .item-image {
+
+        width:80px;
+        height:80px;
+    }
+
+    .action-buttons {
+
+        flex-direction:column;
+    }
+
+    .btn-main,
+    .btn-outline-modern {
+
+        width:100%;
+
+        justify-content:center;
     }
 }
 
@@ -492,23 +755,26 @@ body::before {
 
 {% include 'navbar.html' %}
 
-<div class="container mt-4 mb-5"
-     style="max-width: 1100px;">
+<div class="container mt-3 mb-4 main-wrapper">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <div class="page-header">
 
-        <h1 class="page-title">
-            Order Details
-        </h1>
+        <div>
 
-        <p class="page-subtitle">
-            Review your order information
-        </p>
+            <h1 class="page-title">
+                Order Details
+            </h1>
+
+            <p class="page-subtitle">
+                Review your order information
+            </p>
+
+        </div>
 
     </div>
 
-    <!-- Order Summary -->
+    <!-- ORDER SUMMARY -->
     <div class="main-card">
 
         <div class="section-body">
@@ -518,13 +784,18 @@ body::before {
                 <div>
 
                     <div class="order-id">
+
                         <i class="bi bi-box-seam"></i>
+
                         Order #{{ order.id }}
+
                     </div>
 
                     <div class="order-date">
+
                         Placed on
                         {{ order.order_date if order.order_date else 'Recently' }}
+
                     </div>
 
                 </div>
@@ -545,7 +816,6 @@ body::before {
                     {% elif order.status=='Delivered' %}
                         status-delivered
                     {% endif %}
-
                     ">
 
                     <i class="
@@ -575,14 +845,17 @@ body::before {
 
     </div>
 
-    <!-- Tracker -->
-    <div class="section-card">
+    <!-- TRACKER -->
+    <div class="section-card mb-4">
 
         <div class="section-header">
 
             <div class="section-title">
+
                 <i class="bi bi-diagram-3"></i>
+
                 Order Progress
+
             </div>
 
             <a href="{{ url_for('download_invoice', order_id=order.id) }}"
@@ -604,6 +877,7 @@ body::before {
 
                 <div class="tracker-steps">
 
+                    <!-- PLACED -->
                     <div class="status-step
                     {% if order.status in ['Placed','Packed','Shipped','Delivered'] %}
                         active
@@ -611,7 +885,9 @@ body::before {
                     ">
 
                         <div class="step-circle">
+
                             <i class="bi bi-check-lg"></i>
+
                         </div>
 
                         <div class="step-label">
@@ -620,6 +896,7 @@ body::before {
 
                     </div>
 
+                    <!-- PACKED -->
                     <div class="status-step
                     {% if order.status in ['Packed','Shipped','Delivered'] %}
                         active
@@ -627,7 +904,9 @@ body::before {
                     ">
 
                         <div class="step-circle">
+
                             <i class="bi bi-box"></i>
+
                         </div>
 
                         <div class="step-label">
@@ -636,6 +915,7 @@ body::before {
 
                     </div>
 
+                    <!-- SHIPPED -->
                     <div class="status-step
                     {% if order.status in ['Shipped','Delivered'] %}
                         active
@@ -643,7 +923,9 @@ body::before {
                     ">
 
                         <div class="step-circle">
+
                             <i class="bi bi-truck"></i>
+
                         </div>
 
                         <div class="step-label">
@@ -652,6 +934,7 @@ body::before {
 
                     </div>
 
+                    <!-- DELIVERED -->
                     <div class="status-step
                     {% if order.status == 'Delivered' %}
                         active
@@ -659,7 +942,9 @@ body::before {
                     ">
 
                         <div class="step-circle">
+
                             <i class="bi bi-house-check"></i>
+
                         </div>
 
                         <div class="step-label">
@@ -676,68 +961,163 @@ body::before {
 
     </div>
 
-    <!-- Delivery Address -->
-    <div class="section-card">
+    <!-- GRID -->
+    <div class="content-grid">
 
-        <div class="section-header">
+        <!-- LEFT -->
+        <div class="left-column">
 
-            <div class="section-title">
-                <i class="bi bi-geo-alt"></i>
-                Delivery Address
+            <!-- ADDRESS -->
+            <div class="section-card">
+
+                <div class="section-header">
+
+                    <div class="section-title">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        Delivery Address
+
+                    </div>
+
+                </div>
+
+                <div class="section-body">
+
+                    <div class="customer-name">
+
+                        {{ address.customer_name }}
+
+                    </div>
+
+                    <div class="address-item">
+
+                        <div class="address-label">
+                            Address
+                        </div>
+
+                        <div class="address-value">
+                            {{ address.address }}
+                        </div>
+
+                    </div>
+
+                    <div class="address-item">
+
+                        <div class="address-label">
+                            City
+                        </div>
+
+                        <div class="address-value">
+                            {{ address.city }}
+                        </div>
+
+                    </div>
+
+                    <div class="address-item">
+
+                        <div class="address-label">
+                            Pincode
+                        </div>
+
+                        <div class="address-value">
+                            {{ address.pincode }}
+                        </div>
+
+                    </div>
+
+                    <div class="address-item">
+
+                        <div class="address-label">
+                            Phone
+                        </div>
+
+                        <div class="address-value">
+                            {{ address.phone }}
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
 
-        <div class="section-body">
+        <!-- RIGHT -->
+        <div class="right-column">
 
-            <div class="customer-name">
-                {{ address.customer_name }}
-            </div>
+            <!-- ORDERED ITEMS -->
+            <div class="section-card">
 
-            <div class="address-item">
+                <div class="section-header">
 
-                <div class="address-label">
-                    Address
+                    <div class="section-title">
+
+                        <i class="bi bi-bag"></i>
+
+                        Ordered Items
+
+                    </div>
+
                 </div>
 
-                <div class="address-value">
-                    {{ address.address }}
-                </div>
+                <div class="section-body">
 
-            </div>
+                    {% for item in items %}
 
-            <div class="address-item">
+                        {% set item_total = item.price * item.quantity %}
 
-                <div class="address-label">
-                    City
-                </div>
+                        <div class="order-item">
 
-                <div class="address-value">
-                    {{ address.city }}
-                </div>
+                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}"
+                                 class="item-image"
+                                 alt="{{ item.product_name }}">
 
-            </div>
+                            <div>
 
-            <div class="address-item">
+                                <div class="item-name">
 
-                <div class="address-label">
-                    Pincode
-                </div>
+                                    {{ item.product_name }}
 
-                <div class="address-value">
-                    {{ address.pincode }}
-                </div>
+                                </div>
 
-            </div>
+                                <div class="item-meta">
 
-            <div class="address-item">
+                                    ₹{{ item.price }}
+                                    ×
+                                    {{ item.quantity }} units
 
-                <div class="address-label">
-                    Phone
-                </div>
+                                </div>
 
-                <div class="address-value">
-                    {{ address.phone }}
+                            </div>
+
+                            <div class="item-price">
+
+                                ₹{{ item_total }}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                    <div class="order-total">
+
+                        <div class="total-label">
+
+                            Total Amount
+
+                        </div>
+
+                        <div class="total-amount">
+
+                            ₹{{ total }}
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -746,69 +1126,7 @@ body::before {
 
     </div>
 
-    <!-- Ordered Items -->
-    <div class="section-card">
-
-        <div class="section-header">
-
-            <div class="section-title">
-                <i class="bi bi-bag"></i>
-                Ordered Items
-            </div>
-
-        </div>
-
-        <div class="section-body">
-
-            {% for item in items %}
-
-                {% set item_total = item.price * item.quantity %}
-
-                <div class="order-item">
-
-                    <img src="{{ url_for('static', filename='uploads/' + item.image) }}"
-                         class="item-image"
-                         alt="{{ item.product_name }}">
-
-                    <div>
-
-                        <div class="item-name">
-                            {{ item.product_name }}
-                        </div>
-
-                        <div class="item-meta">
-                            ₹{{ item.price }}
-                            ×
-                            {{ item.quantity }} units
-                        </div>
-
-                    </div>
-
-                    <div class="item-price">
-                        ₹{{ item_total }}
-                    </div>
-
-                </div>
-
-            {% endfor %}
-
-            <div class="order-total">
-
-                <div class="total-label">
-                    Total Amount
-                </div>
-
-                <div class="total-amount">
-                    ₹{{ total }}
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Buttons -->
+    <!-- BUTTONS -->
     <div class="action-buttons">
 
         <a href="{{ url_for('my_orders') }}"

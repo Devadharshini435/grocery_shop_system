@@ -57,6 +57,7 @@ def register():
             return render_template("register.html", error="Email already exists")
 
         hashed_password = generate_password_hash(password)
+        
 
         cur.execute(
             """
@@ -259,7 +260,7 @@ Your account has been created successfully.
 You can now log in using your email and password.
 
 Thanks,
-Dish2Cart Team
+Grocery store Team
 """)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
@@ -280,7 +281,7 @@ Your password has been reset successfully.
 You can now log in with your new password.
 
 Thanks,
-Dish2Cart Team
+Grocery Store Team
 """)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
@@ -306,37 +307,35 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-    # If already logged in → redirect
+    # ✅ Already logged in
     if "customer_id" in session:
         return redirect(url_for("home"))
 
     if request.method == "POST":
 
-        # 🔹 Get form data
+        # ✅ Get form data
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "").strip()
-        
 
-        # 🔹 Basic validation
+        # ✅ Validation
         if not email or not password:
             flash("Please fill in all fields", "error")
             return redirect(url_for("login"))
 
         try:
-            # 🔹 Database query
+            # ✅ Database query
             cursor = mysql.connection.cursor(pymysql.cursors.DictCursor)
-            cursor.execute(
-                """
-                SELECT 
-                    customer_id, 
-                    customer_name, 
-                    customer_email, 
+
+            cursor.execute("""
+                SELECT
+                    customer_id,
+                    customer_name,
+                    customer_email,
                     customer_password
-                FROM customer 
+                FROM customer
                 WHERE customer_email = %s
-                """,
-                (email,)
-            )
+            """, (email,))
+
             user = cursor.fetchone()
             cursor.close()
 
@@ -344,8 +343,6 @@ def login():
             print("DATABASE ERROR:", e)
             flash("Something went wrong. Please try again.", "error")
             return redirect(url_for("login"))
-        
-        
 
         # ❌ User not found
         if not user:
@@ -354,12 +351,13 @@ def login():
 
         db_password = user["customer_password"]
 
-# ✅ Handle both hashed + plain passwords
-        if db_password.startswith("pbkdf2:sha256"):
+        # ✅ Handle hashed + plain passwords
+        try:
             valid = check_password_hash(db_password, password)
-        else:
+        except:
             valid = (db_password == password)
 
+        # ❌ Wrong password
         if not valid:
             flash("Invalid email or password", "error")
             return redirect(url_for("login"))
@@ -369,14 +367,10 @@ def login():
         session["customer_name"] = user["customer_name"]
         session["customer_email"] = user["customer_email"]
 
-        # 🔹 Remember me    
-        
-
-        
+        flash("Login successful", "success")
 
         return redirect(url_for("home"))
 
-    # 🔹 GET request
     return render_template("login.html")
 @app.context_processor
 def cart_count_processor():
@@ -446,6 +440,42 @@ def logout():
     session.pop("customer_email", None)
 
     return redirect(url_for("login"))
+
+# ---------- Forgot Password ----------
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email'].strip().lower()
+
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT customer_id FROM customer WHERE customer_email = %s", (email,))
+        user = cur.fetchone()
+        cur.close()
+
+        if not user:
+            return redirect(url_for('forgot_password', error="Email not found"))
+
+        # Generate OTP
+        otp = generate_otp()
+
+        # Store OTP
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM email_otp WHERE email = %s", (email,))
+        cur.execute("INSERT INTO email_otp (email, otp) VALUES (%s, %s)", (email, otp))
+        mysql.connection.commit()
+        cur.close()
+
+        # Send OTP email
+        send_otp_email(email, otp)
+
+        # Set session
+        session['email'] = email
+        session['reset_password'] = True
+
+        return redirect(url_for('verify_otp', email=email))
+
+    return render_template('forgot_password.html')
+
 
 # ---------- Products Page (optional) ----------
 
@@ -1600,6 +1630,8 @@ def order_success():
         "order_success.html",
         order=order
     )
+
+print(generate_password_hash("12345"))
 
 if __name__ == "__main__":
     app.run(debug=True)
