@@ -1631,7 +1631,7 @@ def order_success():
         order=order
     )
 
-print(generate_password_hash("12345"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

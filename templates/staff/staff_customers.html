@@ -11,6 +11,8 @@
 body{
 display:flex;
 margin:0;
+background:#f8f9fa;
+font-family:Arial, sans-serif;
 }
 
 /* Sidebar */
@@ -29,17 +31,43 @@ color:white;
 padding:10px;
 text-decoration:none;
 margin-bottom:5px;
+border-radius:5px;
+transition:0.3s;
 }
 
 .sidebar a:hover{
 background:#495057;
-border-radius:5px;
 }
+
+/* Content */
 
 .content{
 margin-left:240px;
 padding:30px;
 width:100%;
+}
+
+/* Table */
+
+.table-container{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.table th,
+.table td{
+vertical-align:middle;
+font-size:14px;
+}
+
+.table th{
+white-space:nowrap;
+}
+
+.address-column{
+min-width:220px;
 }
 
 </style>
@@ -53,13 +81,22 @@ width:100%;
 <div class="sidebar">
 
 <h4 class="text-white text-center">Staff Panel</h4>
+
 <hr class="text-white">
 
 <a href="{{ url_for('staff.dashboard') }}">Dashboard</a>
+
 <a href="{{ url_for('staff.orders') }}">Orders</a>
+
 <a href="{{ url_for('staff.products') }}">Products</a>
+
 <a href="{{ url_for('staff.suppliers') }}">Suppliers</a>
-<a href="{{ url_for('staff.customers') }}">Customers</a>
+
+<a href="{{ url_for('staff.customers') }}"
+   class="bg-secondary">
+   Customers
+</a>
+
 <a href="{{ url_for('staff.staff_logout') }}">Logout</a>
 
 </div>
@@ -69,18 +106,43 @@ width:100%;
 
 <div class="content">
 
-<h2>Customers List</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<table class="table table-bordered table-hover mt-3">
+<h2 class="fw-bold">Customers List</h2>
+
+<a href="{{ url_for('staff.customer_report_pdf') }}"
+   class="btn btn-danger">
+    📄 Download PDF Report
+</a>
+
+</div>
+
+<div class="table-container">
+
+<table class="table table-bordered table-hover align-middle">
 
 <thead class="table-dark">
+
 <tr>
+
 <th>Customer ID</th>
+
 <th>Customer Name</th>
+
 <th>Email</th>
+
+<th>Phone</th>
+
+<th class="address-column">Address</th>
+
+<th>City</th>
+
 <th>Total Orders</th>
+
 <th>Coins</th>
+
 </tr>
+
 </thead>
 
 <tbody>
@@ -88,11 +150,23 @@ width:100%;
 {% for c in customer %}
 
 <tr>
+
 <td>{{ c.customer_id }}</td>
+
 <td>{{ c.customer_name }}</td>
+
 <td>{{ c.customer_email }}</td>
+
+<td>{{ c.phone }}</td>
+
+<td>{{ c.address }}</td>
+
+<td>{{ c.city }}</td>
+
 <td>{{ c.total_orders }}</td>
+
 <td>{{ c.reward_points }}</td>
+
 </tr>
 
 {% endfor %}
@@ -100,6 +174,8 @@ width:100%;
 </tbody>
 
 </table>
+
+</div>
 
 </div>
 

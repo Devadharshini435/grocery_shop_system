@@ -1,5 +1,5 @@
 import MySQLdb
-from flask import render_template, request, redirect, url_for,session
+from flask import Response, render_template, request, redirect, url_for,session
 from . import staff
 from extensions import mysql
 from email.message import EmailMessage
@@ -335,10 +335,15 @@ import io
 # =========================
 # ORDERS PAGE
 # =========================
+
 @staff.route('/staff/orders')
 def orders():
 
     status_filter = request.args.get('status')
+
+    start_date = request.args.get('start_date')
+
+    end_date = request.args.get('end_date')
 
     cur = mysql.connection.cursor()
 
@@ -353,50 +358,106 @@ def orders():
         p.product_name,
         oi.quantity,
         oi.price
+
     FROM orders o
-    JOIN customer c ON o.customer_id = c.customer_id
-    JOIN order_items oi ON o.id = oi.order_id
-    JOIN products p ON oi.product_id = p.product_id
+
+    JOIN customer c 
+        ON o.customer_id = c.customer_id
+
+    JOIN order_items oi 
+        ON o.id = oi.order_id
+
+    JOIN products p 
+        ON oi.product_id = p.product_id
+
+    WHERE 1=1
     """
 
+    params = []
+
+    # Status Filter
+
     if status_filter and status_filter != "All":
-        query += " WHERE o.status = %s"
-        cur.execute(query + " ORDER BY o.id DESC", (status_filter,))
-    else:
-        cur.execute(query + " ORDER BY o.id DESC")
+
+        query += " AND o.status = %s"
+
+        params.append(status_filter)
+
+    # Start Date Filter
+
+    if start_date:
+
+        query += " AND DATE(o.order_date) >= %s"
+
+        params.append(start_date)
+
+    # End Date Filter
+
+    if end_date:
+
+        query += " AND DATE(o.order_date) <= %s"
+
+        params.append(end_date)
+
+    query += " ORDER BY o.id DESC"
+
+    cur.execute(query, params)
 
     data = cur.fetchall()
 
-    # ✅ Group orders
+    # Group Orders
+
     orders_dict = {}
 
     for row in data:
+
         order_id = row['id']
 
         if order_id not in orders_dict:
+
             orders_dict[order_id] = {
+
                 "id": row['id'],
+
                 "customer_name": row['customer_name'],
+
                 "address": row['address'],
+
                 "total_amount": row['total_amount'],
+
                 "status": row['status'],
+
+                "order_date": row['order_date'],
+
                 "order_items": []
+
             }
 
         orders_dict[order_id]["order_items"].append({
+
             "name": row['product_name'],
+
             "qty": row['quantity'],
+
             "price": row['price']
+
         })
 
     orders = list(orders_dict.values())
 
     return render_template(
-        'staff/orders.html',
-        orders=orders,
-        selected_status=status_filter
-    )
 
+        'staff/orders.html',
+
+        orders=orders,
+
+        selected_status=status_filter,
+
+        start_date=start_date,
+
+        end_date=end_date
+
+    )
 
 # =========================
 # UPDATE STATUS
@@ -427,17 +488,31 @@ def update_order_status():
 @staff.route('/staff/orders/report')
 def orders_report():
 
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from flask import request, send_file
+
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer
+    )
+
     from reportlab.lib import colors
+
     from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+
+    from reportlab.lib.pagesizes import landscape, A3
+
     import io
 
-    # ✅ Register Unicode font (fix ₹)
-    pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
+    # Filters
 
     status_filter = request.args.get('status')
+
+    start_date = request.args.get('start_date')
+
+    end_date = request.args.get('end_date')
 
     cur = mysql.connection.cursor()
 
@@ -452,88 +527,253 @@ def orders_report():
         p.product_name,
         oi.quantity,
         oi.price
+
     FROM orders o
-    JOIN customer c ON o.customer_id = c.customer_id
-    JOIN order_items oi ON o.id = oi.order_id
-    JOIN products p ON oi.product_id = p.product_id
+
+    JOIN customer c
+        ON o.customer_id = c.customer_id
+
+    JOIN order_items oi
+        ON o.id = oi.order_id
+
+    JOIN products p
+        ON oi.product_id = p.product_id
+
+    WHERE 1=1
     """
 
+    params = []
+
+    # Status Filter
+
     if status_filter and status_filter != "All":
-        query += " WHERE o.status = %s"
-        cur.execute(query, (status_filter,))
-    else:
-        cur.execute(query)
+
+        query += " AND o.status = %s"
+
+        params.append(status_filter)
+
+    # Start Date Filter
+
+    if start_date:
+
+        query += " AND DATE(o.order_date) >= %s"
+
+        params.append(start_date)
+
+    # End Date Filter
+
+    if end_date:
+
+        query += " AND DATE(o.order_date) <= %s"
+
+        params.append(end_date)
+
+    query += " ORDER BY o.id DESC"
+
+    cur.execute(query, params)
 
     data = cur.fetchall()
 
-    # ✅ Group orders (same logic)
+    # Group Orders
+
     orders_dict = {}
 
     for row in data:
+
         order_id = row['id']
 
         if order_id not in orders_dict:
+
             orders_dict[order_id] = {
+
                 "customer": row['customer_name'],
+
                 "address": row['address'],
+
                 "total": row['total_amount'],
+
                 "status": row['status'],
+
                 "date": row['order_date'],
+
                 "items": []
+
             }
 
         orders_dict[order_id]["items"].append(
             f"{row['product_name']} (x{row['quantity']})"
         )
 
+    # PDF Buffer
+
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer)
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A3),
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=20,
+        bottomMargin=20
+    )
+
     elements = []
+
     styles = getSampleStyleSheet()
 
     # Title
-    elements.append(Paragraph("Orders Report", styles['Title']))
-    elements.append(Spacer(1, 10))
 
-    if status_filter:
-        elements.append(Paragraph(f"Filter: {status_filter}", styles['Normal']))
-        elements.append(Spacer(1, 10))
+    title = Paragraph(
+        "<font size='20'><b>ORDERS REPORT</b></font>",
+        styles['Title']
+    )
 
-    # Table
-    table_data = [["ID", "Customer", "Address", "Items", "Total", "Status", "Date"]]
+    elements.append(title)
+
+    elements.append(Spacer(1, 15))
+
+    # Filter Details
+
+    filter_text = ""
+
+    if status_filter and status_filter != "All":
+
+        filter_text += f"<b>Status:</b> {status_filter} &nbsp;&nbsp;"
+
+    if start_date:
+
+        filter_text += f"<b>From:</b> {start_date} &nbsp;&nbsp;"
+
+    if end_date:
+
+        filter_text += f"<b>To:</b> {end_date}"
+
+    if filter_text:
+
+        elements.append(
+            Paragraph(filter_text, styles['Normal'])
+        )
+
+        elements.append(Spacer(1, 15))
+
+    # Table Data
+
+    table_data = [[
+        "ID",
+        "Customer",
+        "Address",
+        "Items",
+        "Total",
+        "Date",
+        "Status"
+    ]]
 
     for order_id, order in orders_dict.items():
+
         items_text = ", ".join(order["items"])
 
         table_data.append([
-            str(order_id),
-            order["customer"],
-            order["address"],
-            items_text,
-            f"Rs {order['total']}",   # ✅ rupee fixed
-            order["status"],
-            str(order["date"])
+
+            Paragraph(str(order_id), styles['BodyText']),
+
+            Paragraph(order["customer"], styles['BodyText']),
+
+            Paragraph(order["address"], styles['BodyText']),
+
+            Paragraph(items_text, styles['BodyText']),
+
+            Paragraph(f"Rs. {order['total']}", styles['BodyText']),
+
+            Paragraph(
+                order["date"].strftime('%Y-%m-%d'),
+                styles['BodyText']
+            ),
+
+            Paragraph(order["status"], styles['BodyText'])
+
         ])
 
-    table = Table(table_data, repeatRows=1)
+    # Table
+
+    table = Table(
+        table_data,
+        colWidths=[45, 110, 170, 330, 70, 80, 80],
+        repeatRows=1
+    )
+
+    # Table Style
 
     table.setStyle(TableStyle([
-        ('FONTNAME', (0,0), (-1,-1), 'STSong-Light'),  # ✅ apply font
-        ('BACKGROUND', (0,0), (-1,0), colors.grey),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
+
+        # Wrap Text
+
+        ('WORDWRAP', (0, 0), (-1, -1), 'CJK'),
+
+        # Header
+
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#343a40")),
+
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+
+        # Body
+
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+
+        # Alignment
+
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
+        # Grid
+
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+
+        # Padding
+
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+
+        # Alternate Rows
+
+        ('ROWBACKGROUNDS',
+         (0, 1),
+         (-1, -1),
+         [colors.whitesmoke, colors.beige])
+
     ]))
 
     elements.append(table)
 
+    # Build PDF
+
     doc.build(elements)
-    buffer.seek(0)
 
-    return send_file(buffer,
-                     as_attachment=True,
-                     download_name="orders_report.pdf",
-                     mimetype='application/pdf')
+    pdf = buffer.getvalue()
 
+    buffer.close()
+
+    return send_file(
+        io.BytesIO(pdf),
+        as_attachment=True,
+        download_name="orders_report.pdf",
+        mimetype='application/pdf'
+    )
 @staff.route("/staff/edit_product/<int:id>", methods=["GET","POST"])
 def edit_product(id):
 
@@ -670,6 +910,7 @@ def add_supplier():
         return redirect(url_for("staff.suppliers"))
 
     return render_template("add_supplier.html", products=products)
+
 @staff.route("/customers")
 def customers():
 
@@ -681,6 +922,9 @@ def customers():
             c.customer_id,
             c.customer_name,
             c.customer_email,
+            c.phone,
+            c.address,
+            c.city,
 
             -- total orders
             COALESCE(o.total_orders, 0) AS total_orders,
@@ -711,6 +955,8 @@ def customers():
             )
         ) r
         ON c.customer_id = r.customer_id
+
+        ORDER BY c.customer_id DESC
 
     """)
 
@@ -904,6 +1150,303 @@ def product_report_pdf():
     )
 
     return response
+
+@staff.route("/supplier/report/pdf")
+def supplier_report_pdf():
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        SELECT 
+            s.supplier_id,
+            s.supplier_name,
+            p.product_name,
+            s.phone,
+            s.email,
+            s.address
+        FROM suppliers s
+        LEFT JOIN products p
+            ON s.product_id = p.product_id
+    """)
+
+    suppliers = cursor.fetchall()
+
+    buffer = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter
+    )
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    title = Paragraph("Supplier Report", styles['Title'])
+
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    data = [[
+        "ID",
+        "Supplier Name",
+        "Product",
+        "Phone",
+        "Email",
+        "Address"
+    ]]
+
+    for s in suppliers:
+
+        data.append([
+            s["supplier_id"],
+            s["supplier_name"],
+            s["product_name"],
+            s["phone"],
+            s["email"],
+            s["address"]
+        ])
+
+    table = Table(data)
+
+    table.setStyle(TableStyle([
+
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+
+        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+
+        ('BOTTOMPADDING', (0,0), (-1,0), 10),
+
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+
+    buffer.close()
+
+    return Response(
+        pdf,
+        mimetype='application/pdf',
+        headers={
+            'Content-Disposition':
+            'attachment;filename=supplier_report.pdf'
+        }
+    )
+
+@staff.route("/customer/report/pdf")
+def customer_report_pdf():
+
+    from flask import send_file
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer
+    )
+
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.pagesizes import landscape, A3
+
+    import io
+
+    cursor = mysql.connection.cursor()
+
+    # FIXED QUERY
+    cursor.execute("""
+        SELECT 
+            c.customer_id,
+            c.customer_name,
+            c.customer_email,
+            c.phone,
+            c.address,
+
+            COALESCE(r.reward_points, 0) AS reward_points,
+
+            COALESCE(o.total_orders, 0) AS total_orders
+
+        FROM customer c
+
+        LEFT JOIN (
+            SELECT 
+                customer_id,
+                MAX(balance) AS reward_points
+            FROM customer_rewards
+            GROUP BY customer_id
+        ) r
+            ON c.customer_id = r.customer_id
+
+        LEFT JOIN (
+            SELECT 
+                customer_id,
+                COUNT(*) AS total_orders
+            FROM orders
+            GROUP BY customer_id
+        ) o
+            ON c.customer_id = o.customer_id
+
+        ORDER BY c.customer_id DESC
+    """)
+
+    customers = cursor.fetchall()
+
+    # PDF Buffer
+    buffer = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A3),
+        rightMargin=25,
+        leftMargin=25,
+        topMargin=25,
+        bottomMargin=25
+    )
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    # Body Style
+    body_style = styles['BodyText']
+    body_style.fontName = 'Helvetica'
+    body_style.fontSize = 9
+    body_style.leading = 12
+
+    # Title
+    title = Paragraph(
+        "<font size='20'><b>CUSTOMER REPORT</b></font>",
+        styles['Title']
+    )
+
+    elements.append(title)
+    elements.append(Spacer(1, 20))
+
+    # Table Header
+    table_data = [[
+        "ID",
+        "Customer Name",
+        "Email",
+        "Phone",
+        "Address",
+        "Orders",
+        "Coins"
+    ]]
+
+    # Table Rows
+    for c in customers:
+
+        table_data.append([
+
+            Paragraph(str(c["customer_id"]), body_style),
+
+            Paragraph(
+                c["customer_name"] if c["customer_name"] else "-",
+                body_style
+            ),
+
+            Paragraph(
+                c["customer_email"] if c["customer_email"] else "-",
+                body_style
+            ),
+
+            Paragraph(
+                c["phone"] if c["phone"] else "-",
+                body_style
+            ),
+
+            Paragraph(
+                c["address"] if c["address"] else "-",
+                body_style
+            ),
+
+            Paragraph(str(c["total_orders"]), body_style),
+
+            Paragraph(str(c["reward_points"]), body_style)
+
+        ])
+
+    # Create Table
+    table = Table(
+        table_data,
+        colWidths=[55, 150, 260, 120, 300, 80, 80],
+        repeatRows=1
+    )
+
+    # Table Style
+    table.setStyle(TableStyle([
+
+        # Header Style
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#212529")),
+
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+
+        ('TOPPADDING', (0, 0), (-1, 0), 12),
+
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+
+        # Body Style
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+
+        # Grid
+        ('GRID', (0, 0), (-1, -1), 0.7, colors.grey),
+
+        # Alignment
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
+        # Padding
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+
+        # Alternate Row Colors
+        ('ROWBACKGROUNDS',
+         (0, 1),
+         (-1, -1),
+         [colors.whitesmoke, colors.HexColor("#f8f9fa")])
+
+    ]))
+
+    elements.append(table)
+
+    # Build PDF
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+
+    buffer.close()
+
+    cursor.close()
+
+    # Return PDF
+    return send_file(
+        io.BytesIO(pdf),
+        as_attachment=True,
+        download_name="customer_report.pdf",
+        mimetype='application/pdf'
+    )
 @staff.route("/staff/logout")
 def staff_logout():
     session.pop("staff_id", None)

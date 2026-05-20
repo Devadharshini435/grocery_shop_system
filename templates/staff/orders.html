@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <title>Orders</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
+
 body{
     background:#f4f6f9;
     font-family:'Segoe UI';
@@ -56,6 +58,15 @@ body{
 .items-list{
     text-align:left;
 }
+
+.filter-box{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom:20px;
+}
+
 </style>
 
 </head>
@@ -63,6 +74,7 @@ body{
 <body>
 
 <!-- Sidebar -->
+
 <div class="sidebar">
 
 <h4 class="text-center text-white">
@@ -99,20 +111,32 @@ Logout
 
 
 <!-- Main Content -->
+
 <div class="content">
 
-<div class="d-flex justify-content-between mb-3">
+<h2 class="mb-4">
+📦 Orders Management
+</h2>
 
-<h2>📦 Orders Management</h2>
 
-<div class="d-flex gap-2">
+<!-- Filter Section -->
 
-<!-- Filter -->
+<div class="filter-box">
+
 <form method="GET">
 
+<div class="row g-3 align-items-end">
+
+<!-- Status -->
+
+<div class="col-md-3">
+
+<label class="form-label">
+Status
+</label>
+
 <select name="status"
-        class="form-select"
-        onchange="this.form.submit()">
+        class="form-select">
 
 <option value="All">
 All
@@ -145,21 +169,75 @@ Cancelled
 
 </select>
 
-</form>
+</div>
 
-<!-- PDF -->
-<a href="{{ url_for('staff.orders_report', status=selected_status) }}"
-   class="btn btn-success">
+
+<!-- Start Date -->
+
+<div class="col-md-3">
+
+<label class="form-label">
+Start Date
+</label>
+
+<input type="date"
+       name="start_date"
+       class="form-control"
+       value="{{ request.args.get('start_date','') }}">
+
+</div>
+
+
+<!-- End Date -->
+
+<div class="col-md-3">
+
+<label class="form-label">
+End Date
+</label>
+
+<input type="date"
+       name="end_date"
+       class="form-control"
+       value="{{ request.args.get('end_date','') }}">
+
+</div>
+
+
+<!-- Buttons -->
+
+<div class="col-md-3 d-flex gap-2">
+
+<button type="submit"
+        class="btn btn-primary w-50">
+
+Filter
+
+</button>
+
+<a href="{{ url_for(
+    'staff.orders_report',
+    status=selected_status,
+    start_date=request.args.get('start_date'),
+    end_date=request.args.get('end_date')
+) }}"
+   class="btn btn-success w-50">
 
 📄 PDF
 
 </a>
 
 </div>
+
+</div>
+
+</form>
+
 </div>
 
 
 <!-- Orders Table -->
+
 <div class="card p-3">
 
 <table class="table table-bordered">
@@ -172,6 +250,7 @@ Cancelled
 <th>Customer</th>
 <th>Items</th>
 <th>Total</th>
+<th>Date</th>
 <th>Status</th>
 <th>Update</th>
 
@@ -214,9 +293,13 @@ Cancelled
 <td>
 ₹{{ order.total_amount }}
 </td>
+<td>
+{{ order.order_date.strftime('%Y-%m-%d') }}
+</td>
 
 
-<!-- STATUS -->
+<!-- Status -->
+
 <td>
 
 {% if order.status == 'Placed' %}
@@ -254,7 +337,8 @@ Cancelled
 </td>
 
 
-<!-- UPDATE -->
+<!-- Update -->
+
 <td>
 
 {% if order.status in ['Delivered','Cancelled'] %}
