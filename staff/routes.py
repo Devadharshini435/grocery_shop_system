@@ -13,129 +13,249 @@ from reportlab.lib.pagesizes import letter
 import io
 pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 
-EMAIL_ADDRESS = "dish2cart.grocery@gmail.com"
-EMAIL_PASSWORD = "qsjd wjsn klgz qois"
+EMAIL_ADDRESS = "grocerystoreproject2026@gmail.com"
+EMAIL_PASSWORD = "fjxb bean vujn fnkk"
 
 
 
-def send_status_email(to_email, order_id, order_date, status):
+def send_status_email(to_email, order_id, order_date, status, products):
 
-    status_lower = status.lower().strip()
+    subject = "🎉 Order Delivered"
+    color = "#28a745"
 
-    # ✅ dynamic subject + color + message
-    if status_lower == "pending":
-        subject = "🕒 Order Pending"
-        title = "Order Pending"
-        color = "#ffc107"
-        message = "Your order is pending."
+    # ✅ product rows + total
+    product_rows = ""
 
-    elif status_lower == "packed":
-        subject = "📦 Order Packed"
-        title = "Order Packed"
-        color = "#17a2b8"
-        message = "Your order has been packed."
+    grand_total = 0
 
-    elif status_lower == "shipped":
-        subject = "🚚 Order Shipped"
-        title = "Order Shipped"
-        color = "#007bff"
-        message = "Your order has been shipped."
+    for product in products:
 
-    elif status_lower == "delivered":
-        subject = "🎉 Order Delivered"
-        title = "Order Delivered Successfully"
-        color = "#28a745"
-        message = "Your order has been delivered 🎉"
+        subtotal = float(product['price']) * int(product['qty'])
 
-    elif status_lower == "cancelled":
-        subject = "❌ Order Cancelled"
-        title = "Order Cancelled"
-        color = "#dc3545"
-        message = "Your order has been cancelled."
+        grand_total += subtotal
 
-    else:
-        subject = "Order Update"
-        title = "Order Status Updated"
-        color = "#6c757d"
-        message = f"Order status changed to {status}"
+        product_rows += f"""
+
+        <tr>
+
+            <td style="
+                padding:6px;
+                border:1px solid #ddd;
+            ">
+                {product['name']}
+            </td>
+
+            <td style="
+                padding:6px;
+                border:1px solid #ddd;
+                text-align:center;
+            ">
+                {product['qty']}
+            </td>
+
+            <td style="
+                padding:6px;
+                border:1px solid #ddd;
+                text-align:right;
+            ">
+                ₹{product['price']}
+            </td>
+
+            <td style="
+                padding:6px;
+                border:1px solid #ddd;
+                text-align:right;
+            ">
+                ₹{subtotal}
+            </td>
+
+        </tr>
+
+        """
 
     msg = EmailMessage()
+
     msg["Subject"] = subject
     msg["From"] = EMAIL_ADDRESS
     msg["To"] = to_email
 
-    msg.set_content(message)
+    msg.set_content("Your order has been delivered successfully.")
 
     html_content = f"""
+
     <html>
-    <body style="font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;">
+
+    <body style="
+        font-family:Arial;
+        background:#f4f6f8;
+        padding:10px;
+    ">
 
         <div style="
             max-width:600px;
             margin:auto;
             background:white;
-            border-radius:10px;
+            border-radius:8px;
             overflow:hidden;
-            box-shadow:0 0 10px rgba(0,0,0,0.1);
+            box-shadow:0 0 5px rgba(0,0,0,0.1);
         ">
 
-            <div style="background:{color};color:white;padding:20px;text-align:center;">
-                <h2>Dish2Cart</h2>
-                <h3>{title}</h3>
+            <!-- Header -->
+
+            <div style="
+                background:{color};
+                color:white;
+                padding:15px;
+                text-align:center;
+            ">
+
+                <h2 style="margin:0;">
+                    Grocery Store
+                </h2>
+
+                <h3 style="margin-top:5px;">
+                    Order Delivered Successfully 🎉
+                </h3>
+
             </div>
 
-            <div style="padding:25px;color:#333;">
+            <!-- Body -->
+
+            <div style="padding:15px;">
 
                 <p>Hello Customer,</p>
 
-                <p>{message}</p>
+                <p>
+                    Your order has been delivered successfully.
+                </p>
 
-                <table style="width:100%;margin-top:15px;border-collapse:collapse;">
+                <!-- Order Details -->
+
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                    font-size:14px;
+                ">
+
                     <tr>
                         <td><b>Order ID</b></td>
                         <td>#{order_id}</td>
                     </tr>
+
                     <tr style="background:#f2f2f2;">
                         <td><b>Order Date</b></td>
                         <td>{order_date}</td>
                     </tr>
+
                     <tr>
                         <td><b>Status</b></td>
-                        <td style="color:{color};"><b>{status}</b></td>
+                        <td style="color:{color};">
+                            <b>{status}</b>
+                        </td>
                     </tr>
+
                 </table>
 
-                <div style="text-align:center;margin-top:25px;">
-                    <a href="http://127.0.0.1:5000"
-                       style="
-                       background:{color};
-                       color:white;
-                       padding:12px 20px;
-                       text-decoration:none;
-                       border-radius:5px;
-                       font-weight:bold;">
-                       View Website
-                    </a>
-                </div>
+                <!-- Products -->
 
-            </div>
+                <h3 style="margin-top:20px;">
+                    Ordered Products
+                </h3>
 
-            <div style="background:#f1f1f1;padding:15px;text-align:center;font-size:12px;">
-                © 2026 Dish2Cart
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                    font-size:14px;
+                ">
+
+                    <tr style="
+                        background:{color};
+                        color:white;
+                    ">
+
+                        <th style="
+                            padding:6px;
+                            border:1px solid #ddd;
+                        ">
+                            Product
+                        </th>
+
+                        <th style="
+                            padding:6px;
+                            border:1px solid #ddd;
+                        ">
+                            Qty
+                        </th>
+
+                        <th style="
+                            padding:6px;
+                            border:1px solid #ddd;
+                        ">
+                            Price
+                        </th>
+
+                        <th style="
+                            padding:6px;
+                            border:1px solid #ddd;
+                        ">
+                            Total
+                        </th>
+
+                    </tr>
+
+                    {product_rows}
+
+                    <!-- Grand Total -->
+
+                    <tr>
+
+                        <td colspan="3"
+                            style="
+                            padding:8px;
+                            border:1px solid #ddd;
+                            text-align:right;
+                            font-weight:bold;
+                            background:#f2f2f2;
+                        ">
+
+                            Grand Total
+
+                        </td>
+
+                        <td style="
+                            padding:8px;
+                            border:1px solid #ddd;
+                            font-weight:bold;
+                            color:{color};
+                            text-align:right;
+                            background:#f2f2f2;
+                        ">
+
+                            ₹{grand_total}
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
             </div>
 
         </div>
 
     </body>
+
     </html>
+
     """
 
     msg.add_alternative(html_content, subtype="html")
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        server.send_message(msg)
 
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+
+        server.send_message(msg)
 
 @staff.route("/staff/login", methods=["GET", "POST"])
 def staff_login():
@@ -458,30 +578,102 @@ def orders():
         end_date=end_date
 
     )
-
-# =========================
-# UPDATE STATUS
-# =========================
 @staff.route('/staff/update_order_status', methods=['POST'])
 def update_order_status():
+
     order_id = request.form['order_id']
     new_status = request.form['status']
 
     cur = mysql.connection.cursor()
 
-    cur.execute("SELECT status FROM orders WHERE id=%s", (order_id,))
+    # ✅ current status
+    cur.execute(
+        "SELECT status FROM orders WHERE id=%s",
+        (order_id,)
+    )
+
     current_status = cur.fetchone()['status']
 
-    # ❌ prevent editing completed
+    # ❌ prevent editing completed orders
     if current_status in ['Delivered', 'Cancelled']:
+
+        cur.close()
+
         return redirect(url_for('staff.orders'))
 
-    cur.execute("UPDATE orders SET status=%s WHERE id=%s", (new_status, order_id))
+    # ✅ update status
+    cur.execute(
+        "UPDATE orders SET status=%s WHERE id=%s",
+        (new_status, order_id)
+    )
+
     mysql.connection.commit()
 
+    # ✅ customer details
+    cur.execute("""
+
+        SELECT
+            customer.customer_email,
+            orders.order_date
+
+        FROM orders
+
+        JOIN customer
+        ON orders.customer_id = customer.customer_id
+
+        WHERE orders.id = %s
+
+    """, (order_id,))
+
+    order_data = cur.fetchone()
+
+    # ✅ ordered products
+    cur.execute("""
+
+        SELECT
+            products.product_name,
+            order_items.quantity,
+            order_items.price
+
+        FROM order_items
+
+        JOIN products
+        ON order_items.product_id = products.product_id
+
+        WHERE order_items.order_id = %s
+
+    """, (order_id,))
+
+    items = cur.fetchall()
+
+    products = []
+
+    for item in items:
+
+        products.append({
+
+            "name": item['product_name'],
+            "qty": item['quantity'],
+            "price": item['price']
+
+        })
+
+    # ✅ send email only when delivered
+    if new_status == "Delivered":
+
+        send_status_email(
+
+            order_data['customer_email'],
+            order_id,
+            order_data['order_date'],
+            new_status,
+            products
+
+        )
+
+    cur.close()
+
     return redirect(url_for('staff.orders'))
-
-
 # =========================
 # PDF REPORT
 # =========================

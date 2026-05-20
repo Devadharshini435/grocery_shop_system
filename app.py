@@ -30,8 +30,8 @@ mysql.init_app(app)
 
 from staff import staff
 app.register_blueprint(staff)
-EMAIL_ADDRESS = "dish2cart.grocery@gmail.com"
-EMAIL_PASSWORD = "qsjd wjsn klgz qois"
+EMAIL_ADDRESS = "grocerystoreproject2026@gmail.com"
+EMAIL_PASSWORD = "fjxb bean vujn fnkk"
 app.secret_key = "12345"  # Session secret key
 OTP_EXPIRY = 300 
 UPLOAD_FOLDER = "static/uploads"
