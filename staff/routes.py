@@ -1366,9 +1366,13 @@ def supplier_report_pdf():
     buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
-        buffer,
-        pagesize=letter
-    )
+    buffer,
+    pagesize=letter,
+    rightMargin=30,
+    leftMargin=30,
+    topMargin=30,
+    bottomMargin=30
+)
 
     elements = []
 
@@ -1436,7 +1440,7 @@ def supplier_report_pdf():
 @staff.route("/customer/report/pdf")
 def customer_report_pdf():
 
-    from flask import send_file
+    from flask import Response
     from reportlab.platypus import (
         SimpleDocTemplate,
         Table,
@@ -1447,13 +1451,12 @@ def customer_report_pdf():
 
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.pagesizes import landscape, A3
+    from reportlab.lib.pagesizes import letter
 
     import io
 
     cursor = mysql.connection.cursor()
 
-    # FIXED QUERY
     cursor.execute("""
         SELECT 
             c.customer_id,
@@ -1491,39 +1494,39 @@ def customer_report_pdf():
 
     customers = cursor.fetchall()
 
-    # PDF Buffer
+    # =========================
+    # PDF BUFFER
+    # =========================
     buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=landscape(A3),
-        rightMargin=25,
-        leftMargin=25,
-        topMargin=25,
-        bottomMargin=25
+        pagesize=letter,
+        rightMargin=50,
+        leftMargin=50,
+        topMargin=40,
+        bottomMargin=40
     )
 
     elements = []
 
     styles = getSampleStyleSheet()
 
-    # Body Style
-    body_style = styles['BodyText']
-    body_style.fontName = 'Helvetica'
-    body_style.fontSize = 9
-    body_style.leading = 12
-
-    # Title
+    # =========================
+    # TITLE
+    # =========================
     title = Paragraph(
-        "<font size='20'><b>CUSTOMER REPORT</b></font>",
+        "Customer Report",
         styles['Title']
     )
 
     elements.append(title)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 15))
 
-    # Table Header
-    table_data = [[
+    # =========================
+    # TABLE DATA
+    # =========================
+    data = [[
         "ID",
         "Customer Name",
         "Email",
@@ -1533,97 +1536,82 @@ def customer_report_pdf():
         "Coins"
     ]]
 
-    # Table Rows
     for c in customers:
 
-        table_data.append([
+        data.append([
 
-            Paragraph(str(c["customer_id"]), body_style),
+            c["customer_id"],
 
-            Paragraph(
-                c["customer_name"] if c["customer_name"] else "-",
-                body_style
-            ),
+            c["customer_name"]
+            if c["customer_name"] else "-",
 
-            Paragraph(
-                c["customer_email"] if c["customer_email"] else "-",
-                body_style
-            ),
+            c["customer_email"]
+            if c["customer_email"] else "-",
 
-            Paragraph(
-                c["phone"] if c["phone"] else "-",
-                body_style
-            ),
+            c["phone"]
+            if c["phone"] else "-",
 
-            Paragraph(
-                c["address"] if c["address"] else "-",
-                body_style
-            ),
+            c["address"]
+            if c["address"] else "-",
 
-            Paragraph(str(c["total_orders"]), body_style),
+            c["total_orders"],
 
-            Paragraph(str(c["reward_points"]), body_style)
+            c["reward_points"]
 
         ])
 
-    # Create Table
+    # =========================
+    # TABLE
+    # =========================
     table = Table(
-        table_data,
-        colWidths=[55, 150, 260, 120, 300, 80, 80],
-        repeatRows=1
+        data,
+        colWidths=[30, 75, 120, 70, 120, 40, 40]
     )
 
-    # Table Style
     table.setStyle(TableStyle([
 
-        # Header Style
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#212529")),
+        # HEADER
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
 
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
 
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
 
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTSIZE', (0,0), (-1,0), 9),
 
-        ('TOPPADDING', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0,0), (-1,0), 10),
 
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        # BODY
+        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
 
-        # Body Style
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
 
-        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('FONTSIZE', (0,1), (-1,-1), 7),
 
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        # GRID
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
 
-        # Grid
-        ('GRID', (0, 0), (-1, -1), 0.7, colors.grey),
+        # ALIGNMENT
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
 
-        # Alignment
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
 
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        # PADDING
+        ('TOPPADDING', (0,1), (-1,-1), 6),
 
-        # Padding
-        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        ('BOTTOMPADDING', (0,1), (-1,-1), 6),
 
-        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+        ('LEFTPADDING', (0,0), (-1,-1), 4),
 
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-
-        # Alternate Row Colors
-        ('ROWBACKGROUNDS',
-         (0, 1),
-         (-1, -1),
-         [colors.whitesmoke, colors.HexColor("#f8f9fa")])
+        ('RIGHTPADDING', (0,0), (-1,-1), 4),
 
     ]))
 
     elements.append(table)
 
-    # Build PDF
+    # =========================
+    # BUILD PDF
+    # =========================
     doc.build(elements)
 
     pdf = buffer.getvalue()
@@ -1632,12 +1620,16 @@ def customer_report_pdf():
 
     cursor.close()
 
-    # Return PDF
-    return send_file(
-        io.BytesIO(pdf),
-        as_attachment=True,
-        download_name="customer_report.pdf",
-        mimetype='application/pdf'
+    # =========================
+    # RETURN PDF
+    # =========================
+    return Response(
+        pdf,
+        mimetype='application/pdf',
+        headers={
+            'Content-Disposition':
+            'attachment;filename=customer_report.pdf'
+        }
     )
 @staff.route("/staff/logout")
 def staff_logout():

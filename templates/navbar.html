@@ -25,6 +25,8 @@
     <!-- Navbar -->
     <div class="collapse navbar-collapse" id="navbarNav">
 
+      {% if session.get('customer_id') %}
+
       <!-- Search -->
       <form class="d-flex mx-auto"
             action="/search"
@@ -55,8 +57,12 @@
 
       </form>
 
+      {% endif %}
+
       <!-- Right Menu -->
       <ul class="navbar-nav align-items-center ms-auto">
+
+        {% if session.get('customer_id') %}
 
         <li class="nav-item">
           <a class="nav-link"
@@ -101,8 +107,6 @@
         </li>
 
         <!-- Profile -->
-        {% if session.get('customer_id') %}
-
         <li class="nav-item dropdown ms-2">
 
           <a class="nav-link dropdown-toggle"
@@ -145,20 +149,20 @@
         <li class="nav-item ms-2">
 
           <a class="btn btn-light rounded-pill px-3 fw-semibold me-2"
-   href="/login">
+             href="/login">
 
-   <i class="fas fa-right-to-bracket me-1"></i>
-   Sign In
+            <i class="fas fa-right-to-bracket me-1"></i>
+            Sign In
 
-</a>
+          </a>
 
-<a class="btn btn-success rounded-pill px-3 fw-semibold"
-   href="/register">
+          <a class="btn btn-success rounded-pill px-3 fw-semibold"
+             href="/register">
 
-   <i class="fas fa-user-plus me-1"></i>
-   Sign Up
+            <i class="fas fa-user-plus me-1"></i>
+            Sign Up
 
-</a>
+          </a>
 
         </li>
 

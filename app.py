@@ -1631,7 +1631,168 @@ def order_success():
         order=order
     )
 
+# ---------- Supplier Register ----------
+@app.route("/supplier/register", methods=["GET", "POST"])
+def supplier_register():
 
+    if request.method == "POST":
 
+        supplier_name = request.form["supplier_name"].strip()
+        email = request.form["email"].strip().lower()
+        phone = request.form["phone"].strip()
+        address = request.form["address"].strip()
+        password = request.form["password"].strip()
+
+        cur = mysql.connection.cursor()
+
+        cur.execute(
+            "SELECT supplier_id FROM suppliers WHERE email = %s",
+            (email,)
+        )
+
+        if cur.fetchone():
+            cur.close()
+            flash("Email already exists", "error")
+            return redirect(url_for("supplier_register"))
+
+        hashed_password = generate_password_hash(password)
+
+        cur.execute("""
+            INSERT INTO suppliers
+            (supplier_name, email, phone, address, password)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            supplier_name,
+            email,
+            phone,
+            address,
+            hashed_password
+        ))
+
+        mysql.connection.commit()
+        cur.close()
+
+        flash("Supplier account created successfully", "success")
+
+        return redirect(url_for("supplier_login"))
+
+    return render_template("supplier/register.html")
+# ---------- Supplier Login ----------
+from werkzeug.security import check_password_hash
+
+@app.route("/supplier/login", methods=["GET", "POST"])
+def supplier_login():
+
+    if request.method == "POST":
+
+        email = request.form.get("email").strip().lower()
+        password = request.form.get("password").strip()
+
+        cursor = mysql.connection.cursor(pymysql.cursors.DictCursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM suppliers
+            WHERE email = %s
+        """, (email,))
+
+        supplier = cursor.fetchone()
+
+        cursor.close()
+
+        if not supplier:
+            flash("Invalid email or password", "error")
+            return redirect(url_for("supplier_login"))
+
+        # CHECK HASHED PASSWORD
+        if not check_password_hash(supplier["password"], password):
+
+            flash("Invalid email or password", "error")
+            return redirect(url_for("supplier_login"))
+
+        session["supplier_id"] = supplier["supplier_id"]
+        session["supplier_name"] = supplier["supplier_name"]
+
+        flash("Login successful", "success")
+
+        return redirect(url_for("supplier_dashboard"))
+
+    return render_template("supplier/login.html")
+
+# ---------- Supplier Dashboard ----------
+@app.route("/supplier/dashboard")
+def supplier_dashboard():
+
+    # Check login
+    if "supplier_id" not in session:
+        return redirect(url_for("supplier/login"))
+
+    supplier_id = session["supplier_id"]
+
+    cursor = mysql.connection.cursor(pymysql.cursors.DictCursor)
+
+    cursor.execute("""
+        SELECT *
+        FROM suppliers
+        WHERE supplier_id = %s
+    """, (supplier_id,))
+
+    supplier = cursor.fetchone()
+
+    cursor.close()
+
+    return render_template(
+        "supplier/dashboard.html",
+        supplier=supplier
+    )
+from werkzeug.utils import secure_filename
+import os
+
+# ---------- Supplier Add Product ----------
+# ---------- Supplier Add Product ----------
+# ---------- Supplier My Products ----------
+@app.route("/supplier/my-products")
+def supplier_my_products():
+
+    if "supplier_id" not in session:
+        return redirect(url_for("supplier_login"))
+
+    supplier_id = session["supplier_id"]
+
+    cursor = mysql.connection.cursor()
+
+    # Get supplier name
+    cursor.execute("""
+        SELECT supplier_name
+        FROM suppliers
+        WHERE supplier_id = %s
+    """, (supplier_id,))
+
+    supplier = cursor.fetchone()
+
+    # Get supplier products
+    cursor.execute("""
+        SELECT
+            product_id,
+            category,
+            product_name,
+            description,
+            price,
+            stock,
+            image
+        FROM products
+        WHERE supplier_id = %s
+        ORDER BY product_id DESC
+    """, (supplier_id,))
+
+    products = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "supplier/my_products.html",
+        products=products,
+        supplier=supplier
+    )
 if __name__ == "__main__":
     app.run(debug=True)
